@@ -10,6 +10,8 @@ import matplotlib.pyplot as plt
 from PIL import Image
 import numpy as np
 import sys
+from pathlib import Path
+import os
 
 sys.setrecursionlimit(10000)
 
@@ -85,17 +87,20 @@ def collate_fn(batch):
     numeric_labels = [label2id_map[label] for label in country_labels]
     return {"pixel_values": torch.stack(images), "labels": torch.tensor(numeric_labels)}
 
-dataloader = DataLoader(dataset['train'], batch_size=16, shuffle=False, collate_fn=collate_fn)
-device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-model.to(device)
+if os.path.exists(str(Path(__file__).absolute().parent) + "/np_cache/embeddings.npy"):
+    embeddings = np.load("embeddings.npy")
+    labels = np.load("labels.npy")
+else:
+    dataloader = DataLoader(dataset['train'], batch_size=16, shuffle=False, collate_fn=collate_fn)
+    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    model.to(device)
 
-with torch.no_grad():
-    for x, batch in enumerate(dataloader, 1):
-        if x < 1380:
+    with torch.no_grad():
+        for x, batch in enumerate(dataloader, 1):
             print(f'started iteration {x}')            
             pixel_values = batch['pixel_values'].to(device)
             region_labels = batch['labels']
-            
+                
             try:
                 outputs = model(pixel_values)
                 if hasattr(outputs, 'last_hidden_state'):
@@ -105,19 +110,17 @@ with torch.no_grad():
             except Exception as e:
                 print(f"error extracting features: {e}")
                 continue
-            
+                
             embeddings.append(feats.cpu())
             labels.append(region_labels)
-        else:
-            break
-
-if embeddings:
+    
     embeddings = torch.cat(embeddings).numpy()
     labels = torch.cat(labels).numpy()
 
+if embeddings:
     embeddings_2d = embeddings.reshape(embeddings.shape[0], -1)
 
-    umap = UMAP(n_neighbors=2, min_dist=0.01, metric='cosine', random_state=42)
+    umap = UMAP(n_neighbors=30, min_dist=0.25, metric='cosine', random_state=42, init='spectral')
     emb_umap = umap.fit_transform(embeddings_2d)
 
     unique_labels = np.unique(labels)
