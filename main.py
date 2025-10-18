@@ -405,10 +405,14 @@ all_points = np.concatenate([centroids, sample_emb], axis=0)
 scaled = StandardScaler().fit_transform(all_points)
 
 # proj = PCA(n_components=48).fit_transform(scaled)
-umap = UMAP(n_components=3, metric='euclidean', random_state=42).fit_transform(scaled)
+umap_2d = UMAP(n_components=2, n_neighbors=5, metric='euclidean', random_state=42).fit_transform(scaled)
+umap_3d = UMAP(n_components=3, n_neighbors=5, metric='euclidean', random_state=42).fit_transform(scaled)
 
-proj_centroids = umap[:-1]
-proj_sample = umap[-1]
+plane_centroids = umap_2d[:-1]
+plane_sample = umap_2d[-1]
+
+proj_centroids = umap_3d[:-1]
+proj_sample = umap_3d[-1]
 
 # print("embeds_scaled shape:", embeds_scaled.shape)
 # print("embeds_scaled:", embeddings)
@@ -419,9 +423,38 @@ def volume_plot():
     coord = pd.DataFrame(proj_centroids, columns=['x','y','z'])
     coord['label'] = list(map(lambda x: iso_alpha2_to_country[id2label_map[x]], classes))
     coord.loc[len(coord)] = [proj_sample[0], proj_sample[1], proj_sample[2], 'X']
-
     fig = px.scatter_3d(coord, x='x', y='y', z='z', color='label', title="3D embedding projection", text=coord['label'])
     fig.show()
+
+def plane_plot():
+    plt.figure(figsize=(16, 8))
+    scatter = plt.scatter(
+        plane_centroids[:, 0],
+        plane_centroids[:, 1],
+        c=classes,
+        cmap='tab20',
+        s=5)
+    
+    for i, lbl in enumerate(classes):
+        country = id2label_map.get(int(lbl), str(lbl))
+        plt.text(
+            plane_centroids[i, 0],
+            plane_centroids[i, 1],
+            country,
+            fontsize=12,
+            weight='bold',
+            ha='center',
+            va='center')
+        
+    plt.scatter(
+        plane_sample[0],
+        plane_sample[1],
+        c='red',
+        s=60,
+        edgecolor='black',
+        marker='X')
+    plt.tight_layout()
+    plt.show()
 
 def distance():
     closest_euc_idx = np.argmin(euclidean_distances(sample_emb, centroids))
@@ -429,7 +462,9 @@ def distance():
     closest_cos_idx = np.argmin(cosine_distances(sample_emb, centroids))
     print("closest match (via cosine):", id2label_map[int(labels[closest_cos_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(labels[closest_cos_idx])]])
 
-
-distance()
-volume_plot()
+plane_plot()
 predict(IMG=IMG)
+distance()
+
+input("Press any key to make 3D plot...")
+volume_plot()

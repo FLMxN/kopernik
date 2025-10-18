@@ -5,7 +5,6 @@ import PIL
 import os
 import torch.nn.functional as F
 from predictor import DeterminedPredictor
-from coordinates import CoordinatePredictor
 
 TARGET_SIZE = 512
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
