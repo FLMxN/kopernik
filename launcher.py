@@ -75,7 +75,6 @@ def predict_image(model, processor, device, image_path, top_k=5):
         print(f"❌ Error processing image: {e}")
         return None, None
 
-# Main execution
 def predict(IMG):
     model_path = "D:/resnet50-finetuned"
     processor_path = "D:/resnet50-finetuned"  # Original model for processor
@@ -86,11 +85,10 @@ def predict(IMG):
     # coord_predictor = CoordinatePredictor("D:/resnet50-finetuned")
 
     settings = [
-        {"temperature": 0.1, "use_tta": True, "min_confidence": 0.01},
-        {"temperature": 0.5, "use_tta": True, "min_confidence": 0.01},
+        {"temperature": 0.01, "use_tta": True, "min_confidence": 0.01},
+        {"temperature": 1.00, "use_tta": True, "min_confidence": 0.01},
     ]
 
     for i, setting in enumerate(settings, 1):
-        print(f"{'='*60}")
-        print(f"{'Volume' if i > 1 else 'Precision'}")
+        print(f"{'\nVolume' if i > 1 else '\nPrecision'}")
         predictor.predict(IMG, **setting)

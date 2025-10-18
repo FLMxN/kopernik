@@ -376,13 +376,6 @@ df['label'] = labels
 centroids = df.groupby('label').mean().to_numpy()
 classes = df['label'].unique()
 
-# scaler = StandardScaler().fit(embeddings.reshape(embeddings.shape[0], -1))
-# embeds_scaled = scaler.transform(embeddings.reshape(embeddings.shape[0], -1))
-
-# embeddings_2d = embeddings.reshape((embeddings.shape[0], -1))
-# embeds_scaled = StandardScaler().fit_transform(embeddings_2d)
-
-
 if IMG != None:
     print('preprocessing sample...')
     sample = preprocess(Image.open(IMG).convert('RGB')).unsqueeze(0)
@@ -398,13 +391,9 @@ if IMG != None:
         except:
             print('lulz2')
 
-    # sample_emb = scaler.transform(sample_emb.reshape(sample_emb.shape[0], -1))
-    # sample_scaled = scaler.transform(sample_emb)
-
 all_points = np.concatenate([centroids, sample_emb], axis=0)
 scaled = StandardScaler().fit_transform(all_points)
 
-# proj = PCA(n_components=48).fit_transform(scaled)
 umap_2d = UMAP(n_components=2, n_neighbors=5, metric='euclidean', random_state=42).fit_transform(scaled)
 umap_3d = UMAP(n_components=3, n_neighbors=5, metric='euclidean', random_state=42).fit_transform(scaled)
 
@@ -413,11 +402,6 @@ plane_sample = umap_2d[-1]
 
 proj_centroids = umap_3d[:-1]
 proj_sample = umap_3d[-1]
-
-# print("embeds_scaled shape:", embeds_scaled.shape)
-# print("embeds_scaled:", embeddings)
-# print("sample_2d shape:", sample_2d.shape)
-# print("sample_2d:", sample_2d)
 
 def volume_plot():
     coord = pd.DataFrame(proj_centroids, columns=['x','y','z'])
@@ -458,13 +442,12 @@ def plane_plot():
 
 def distance():
     closest_euc_idx = np.argmin(euclidean_distances(sample_emb, centroids))
-    print("closest match (via euclidean):", id2label_map[int(labels[closest_euc_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(labels[closest_euc_idx])]])
+    print("closest match (via euclidean):", id2label_map[int(labels[closest_euc_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(labels[closest_euc_idx])]] + " <-- #1 METRIC")
     closest_cos_idx = np.argmin(cosine_distances(sample_emb, centroids))
-    print("closest match (via cosine):", id2label_map[int(labels[closest_cos_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(labels[closest_cos_idx])]])
+    print("closest match (via cosine):", id2label_map[int(labels[closest_cos_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(labels[closest_cos_idx])]] + " <-- #2 METRIC")
 
-plane_plot()
 predict(IMG=IMG)
 distance()
-
-input("Press any key to make 3D plot...")
+plane_plot()
+input("Press any key to make 3D plot... <-- #3 METRIC")
 volume_plot()

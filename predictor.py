@@ -294,22 +294,8 @@ class DeterminedPredictor:
                     confident_predictions.append((country, prob, idx))
             
             confident_predictions.sort(key=lambda x: x[1], reverse=True)
-            
-            print(f"prediction:")
-            print(f"   config: TTA={use_tta}, Temperature={temperature}, Min Confidence={min_confidence*100:.1f}%")
-            print(f"   value:")
-            
-            if confident_predictions:
-                for i, (country, prob, idx) in enumerate(confident_predictions[:3]):
-                    confidence = prob * 100
-                    print(f"   {i+1}. {country} // {iso_alpha2_to_country[country]}: {prob:.4f} ({confidence:.1f}%)")
-            else:
-                top_idx = probs.argmax()
-                top_country = self.model.config.id2label[top_idx]
-                top_prob = probs[top_idx]
-                print(f"   last resort: {top_country} ({top_prob*100:.1f}%)")
-            
-            return confident_predictions if confident_predictions else [(top_country, top_prob, top_idx)]
+            for _, (country, prob, idx) in enumerate(confident_predictions[:3]):
+                print(f"{country} // {iso_alpha2_to_country[country]}: {prob:.2f}")
             
         except Exception as e:
             print(f"error: {e}")
