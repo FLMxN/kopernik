@@ -5,6 +5,7 @@ from sklearn.metrics.pairwise import cosine_distances, euclidean_distances
 import torch
 import datasets
 from datasets import Dataset, load_dataset
+from torchvision.transforms.functional import InterpolationMode
 from torch.utils.data import DataLoader
 from torchvision import transforms
 from umap import UMAP
@@ -15,14 +16,22 @@ import sys
 from pathlib import Path
 import os
 from launcher import predict
-from sklearn.decomposition import PCA
 import pandas as pd
-from mpl_toolkits.mplot3d import Axes3D
 import plotly.express as px
+from tqdm import tqdm
 
-IMG = "pics/image.png"
+IMG = "pics/giper2.jpg"
+
+FOV = 75
+HORIZONTAL = 0
+VERTICAL = 0
+HEIGHT = 561
+WIDTH = 997
+
 sys.setrecursionlimit(10000)
 np.random.seed(42)
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
 
 dataset = load_dataset("stochastic/random_streetview_images_pano_v0.0.2")
 dataset = dataset.cast_column("image", datasets.Image())
@@ -41,7 +50,6 @@ embeddings = []
 labels = []
 
 preprocess = transforms.Compose([
-    transforms.Resize((531, 531)),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
                          std=[0.229, 0.224, 0.225])
@@ -327,12 +335,18 @@ iso_alpha2_to_country = {
     "ZW": "Zimbabwe",
 }
 
+def lowres(img, target_height=561):
+    orig_width, orig_height = img.size
+    aspect_ratio = orig_width / orig_height
+    new_width = int(target_height * aspect_ratio)
+    resized_img = img.resize((new_width, target_height), Image.Resampling.LANCZOS)
+    return resized_img
+    
 def collate_fn(batch):
     images = []
     country_labels = []
     for row in batch:
-        print(row, type(row))
-        img = row['image']
+        img = row['image'].crop((1017, 0, 2033, 561)).convert('RGB')
         img_tensor = preprocess(img)
         images.append(img_tensor)
         country_labels.append(row['country_iso_alpha2'])
@@ -350,8 +364,7 @@ else:
     model.to(device)
 
     with torch.no_grad():
-        for x, batch in enumerate(dataloader, 1):
-            print(f'started iteration {x}')            
+        for batch in tqdm(dataloader, desc="Extracting embeddings"):           
             pixel_values = batch['pixel_values'].to(device)
             region_labels = batch['labels']           
             try:
@@ -378,7 +391,8 @@ classes = df['label'].unique()
 
 if IMG != None:
     print('preprocessing sample...')
-    sample = preprocess(Image.open(IMG).convert('RGB')).unsqueeze(0)
+    sample_raw = lowres(Image.open(IMG).convert('RGB'))
+    sample = preprocess(sample_raw).unsqueeze(0)
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     model.to(device)
 
@@ -442,11 +456,11 @@ def plane_plot():
 
 def distance():
     closest_euc_idx = np.argmin(euclidean_distances(sample_emb, centroids))
-    print("closest match (via euclidean):", id2label_map[int(labels[closest_euc_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(labels[closest_euc_idx])]] + " <-- #1 METRIC")
+    print("closest match (via euclidean):", id2label_map[int(classes[closest_euc_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(classes[closest_euc_idx])]] + " <-- #1 METRIC")
     closest_cos_idx = np.argmin(cosine_distances(sample_emb, centroids))
-    print("closest match (via cosine):", id2label_map[int(labels[closest_cos_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(labels[closest_cos_idx])]] + " <-- #2 METRIC")
+    print("closest match (via cosine):", id2label_map[int(classes[closest_cos_idx])] + " // " + iso_alpha2_to_country[id2label_map[int(classes[closest_cos_idx])]] + " <-- #2 METRIC")
 
-predict(IMG=IMG)
+predict(IMG=sample_raw)
 distance()
 plane_plot()
 input("Press any key to make 3D plot... <-- #3 METRIC")

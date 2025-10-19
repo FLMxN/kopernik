@@ -80,15 +80,14 @@ def predict(IMG):
     processor_path = "D:/resnet50-finetuned"  # Original model for processor
     
     model, processor, device = load_model_correctly(model_path, processor_path)
-
     predictor = DeterminedPredictor(model, processor, device)
     # coord_predictor = CoordinatePredictor("D:/resnet50-finetuned")
 
     settings = [
-        {"temperature": 0.01, "use_tta": True, "min_confidence": 0.01},
         {"temperature": 1.00, "use_tta": True, "min_confidence": 0.01},
+        {"temperature": 0.01, "use_tta": True, "min_confidence": 0.01},
     ]
 
     for i, setting in enumerate(settings, 1):
-        print(f"{'\nVolume' if i > 1 else '\nPrecision'}")
-        predictor.predict(IMG, **setting)
+        print(f"{'\nVerdict:' if i > 1 else '\nOptions:'}")
+        predictor.predict(img=IMG, **setting)

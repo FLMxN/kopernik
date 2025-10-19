@@ -257,10 +257,9 @@ class DeterminedPredictor:
         self.processor = processor
         self.device = device
         
-    def predict(self, image_path, temperature, use_tta, min_confidence):
+    def predict(self, img, temperature, use_tta, min_confidence):
         try:
-            image = Image.open(image_path).convert('RGB')
-            
+            image = img           
             if use_tta:
                 predictions = []
                 inputs = self.processor(image, return_tensors="pt")
@@ -295,7 +294,7 @@ class DeterminedPredictor:
             
             confident_predictions.sort(key=lambda x: x[1], reverse=True)
             for _, (country, prob, idx) in enumerate(confident_predictions[:3]):
-                print(f"{country} // {iso_alpha2_to_country[country]}: {prob:.2f}")
+                print(f"{country} // {iso_alpha2_to_country[country]}")
             
         except Exception as e:
             print(f"error: {e}")
