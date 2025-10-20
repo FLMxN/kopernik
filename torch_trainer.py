@@ -97,10 +97,10 @@ if __name__ == "__main__":
 
     # ---------------- TRAINING ----------------
     print('started training loop')
-    for epoch in tqdm(range(NUM_EPOCHS)):
+    for epoch in range(NUM_EPOCHS):
         model.train()
         running_loss = 0.0
-        for imgs, labels in train_loader:
+        for imgs, labels in tqdm(train_loader):
             imgs, labels = imgs.to(DEVICE), labels.to(DEVICE)
             optimizer.zero_grad()
             with torch.autocast(device_type="cuda", enabled=FP16):

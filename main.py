@@ -7,7 +7,7 @@ import datasets
 from datasets import Dataset, load_dataset
 from torchvision.transforms.functional import InterpolationMode
 from torch.utils.data import DataLoader
-from torchvision import transforms
+from torchvision import transforms, models
 from umap import UMAP
 import matplotlib.pyplot as plt
 from PIL import Image
@@ -37,6 +37,13 @@ dataset = load_dataset("stochastic/random_streetview_images_pano_v0.0.2")
 dataset = dataset.cast_column("image", datasets.Image())
 
 model = AutoModel.from_pretrained("D:/resnet50-finetuned")
+
+# model = models.resnet50()
+# weights = torch.load('D:/resnet50-finetuned_raw/resnet50_streetview.pth')
+# num_ftrs = model.fc.in_features
+# model.fc = torch.nn.Linear(num_ftrs, 56)
+# model.load_state_dict(weights)
+
 model.eval()
 
 try:
