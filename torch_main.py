@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 from sklearn.preprocessing import StandardScaler
 from umap import UMAP
 from tqdm import tqdm
-from launcher import predict_image
+from predictor import predict_image
 from transformers import AutoImageProcessor
 
 IMG = "pics/image.jpg"   # single image path
@@ -86,6 +86,7 @@ class ResNet50FeatureExtractor(nn.Module):
         num_ftrs = backbone.fc.in_features
         backbone.fc = nn.Linear(num_ftrs, num_classes)
         self.backbone = backbone
+        self.id2label = id2label_map
 
     def forward(self, x, return_features=False):
         # replicate torchvision forward until avgpool to extract features
@@ -169,7 +170,7 @@ def project_and_plot(embs: np.ndarray, sample_emb: np.ndarray,
     all_points = np.concatenate([centroids, sample_emb], axis=0)
 
     scaled = StandardScaler().fit_transform(all_points)
-    umap_2d = UMAP(n_components=2, random_state=42).fit_transform(scaled)
+    umap_2d = UMAP(n_components=2, n_neighbors=4, random_state=42).fit_transform(scaled)
 
     plane_centroids = umap_2d[:-1]
     plane_sample = umap_2d[-1]
@@ -207,7 +208,7 @@ if __name__ == "__main__":
     model = load_model_checkpoint(ckpt_path, device=device, num_classes=56)
 
     sample_emb, sample_img = extract_sample_embedding(model, IMG, device=device)
+    predict_image(image=sample_img, model=model)
     project_and_plot(embs=embeddings, sample_emb=sample_emb, id2label_map=id2label_map, labels=labels)
 
-    processor = AutoImageProcessor.from_pretrained("D:/resnet50-finetuned", use_fast=True)
-    print(predict_image(image=sample_img, processor=processor, model=model))
+    # processor = AutoImageProcessor.from_pretrained("D:/resnet50-finetuned", use_fast=True)

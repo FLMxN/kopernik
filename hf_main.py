@@ -15,7 +15,7 @@ import numpy as np
 import sys
 from pathlib import Path
 import os
-from launcher import predict_image
+from predictor import predict_image
 import pandas as pd
 import plotly.express as px
 from tqdm import tqdm

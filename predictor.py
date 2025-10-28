@@ -1,306 +1,69 @@
-from PIL import Image
 import torch
+from transformers import AutoImageProcessor, ResNetForImageClassification, AutoConfig
+from PIL import Image
+import PIL
+import os
 import torch.nn.functional as F
-from transformers import AutoImageProcessor
+from torchvision import transforms
 
+HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-iso_alpha2_to_country = {
-    "AD": "Andorra",
-    "AE": "United Arab Emirates",
-    "AF": "Afghanistan",
-    "AG": "Antigua and Barbuda",
-    "AI": "Anguilla",
-    "AL": "Albania",
-    "AM": "Armenia",
-    "AO": "Angola",
-    "AQ": "Antarctica",
-    "AR": "Argentina",
-    "AS": "American Samoa",
-    "AT": "Austria",
-    "AU": "Australia",
-    "AW": "Aruba",
-    "AX": "Åland Islands",
-    "AZ": "Azerbaijan",
-    "BA": "Bosnia and Herzegovina",
-    "BB": "Barbados",
-    "BD": "Bangladesh",
-    "BE": "Belgium",
-    "BF": "Burkina Faso",
-    "BG": "Bulgaria",
-    "BH": "Bahrain",
-    "BI": "Burundi",
-    "BJ": "Benin",
-    "BL": "Saint Barthélemy",
-    "BM": "Bermuda",
-    "BN": "Brunei Darussalam",
-    "BO": "Bolivia (Plurinational State of)",
-    "BQ": "Caribbean Netherlands",
-    "BR": "Brazil",
-    "BS": "The Bahamas",
-    "BT": "Bhutan",
-    "BV": "Bouvet Island",
-    "BW": "Botswana",
-    "BY": "Belarus",
-    "BZ": "Belize",
-    "CA": "Canada",
-    "CC": "Cocos (Keeling) Islands",
-    "CD": "Democratic Republic of the Congo",
-    "CF": "Central African Republic",
-    "CG": "Republic of the Congo",
-    "CH": "Switzerland",
-    "CI": "Ivory Coast",
-    "CK": "Cook Islands",
-    "CL": "Chile",
-    "CM": "Cameroon",
-    "CN": "People's Republic of China",
-    "CO": "Colombia",
-    "CR": "Costa Rica",
-    "CU": "Cuba",
-    "CV": "Cape Verde",
-    "CW": "Curaçao",
-    "CX": "Christmas Island",
-    "CY": "Cyprus",
-    "CZ": "Czech Republic",
-    "DE": "Germany",
-    "DJ": "Djibouti",
-    "DK": "Denmark",
-    "DM": "Dominica",
-    "DO": "Dominican Republic",
-    "DZ": "Algeria",
-    "EC": "Ecuador",
-    "EE": "Estonia",
-    "EG": "Egypt",
-    "EH": "Western Sahara",
-    "ER": "Eritrea",
-    "ES": "Spain",
-    "ET": "Ethiopia",
-    "FI": "Finland",
-    "FJ": "Fiji",
-    "FM": "Federated States of Micronesia",
-    "FO": "Faroe Islands",
-    "FR": "France",
-    "GA": "Gabon",
-    "GB": "United Kingdom",
-    "GD": "Grenada",
-    "GE": "Georgia",
-    "GF": "French Guiana",
-    "GG": "Guernsey",
-    "GH": "Ghana",
-    "GI": "Gibraltar",
-    "GL": "Greenland",
-    "GM": "The Gambia",
-    "GN": "Guinea",
-    "GP": "Guadeloupe",
-    "GQ": "Equatorial Guinea",
-    "GR": "Greece",
-    "GS": "South Georgia and the South Sandwich Islands",
-    "GT": "Guatemala",
-    "GU": "Guam",
-    "GW": "Guinea-Bissau",
-    "GY": "Guyana",
-    "HK": "Hong Kong",
-    "HM": "Heard Island and McDonald Islands",
-    "HN": "Honduras",
-    "HR": "Croatia",
-    "HT": "Haiti",
-    "HU": "Hungary",
-    "ID": "Indonesia",
-    "IE": "Ireland",
-    "IL": "Israel",
-    "IM": "Isle of Man",
-    "IN": "India",
-    "IO": "British Indian Ocean Territory",
-    "IQ": "Iraq",
-    "IR": "Islamic Republic of Iran",
-    "IS": "Iceland",
-    "IT": "Italy",
-    "JE": "Jersey",
-    "JM": "Jamaica",
-    "JO": "Jordan",
-    "JP": "Japan",
-    "KE": "Kenya",
-    "KG": "Kyrgyzstan",
-    "KH": "Cambodia",
-    "KI": "Kiribati",
-    "KM": "Comoros",
-    "KN": "Saint Kitts and Nevis",
-    "KP": "Democratic People's Republic of Korea",
-    "KR": "Republic of Korea",
-    "KW": "Kuwait",
-    "KY": "Cayman Islands",
-    "KZ": "Kazakhstan",
-    "LA": "Lao People's Democratic Republic",
-    "LB": "Lebanon",
-    "LC": "Saint Lucia",
-    "LI": "Liechtenstein",
-    "LK": "Sri Lanka",
-    "LR": "Liberia",
-    "LS": "Lesotho",
-    "LT": "Lithuania",
-    "LU": "Luxembourg",
-    "LV": "Latvia",
-    "LY": "Libya",
-    "MA": "Morocco",
-    "MC": "Monaco",
-    "MD": "Moldova (Republic of)",
-    "ME": "Montenegro",
-    "MF": "Saint Martin (French part)",
-    "MG": "Madagascar",
-    "MH": "Marshall Islands",
-    "MK": "North Macedonia",
-    "ML": "Mali",
-    "MM": "Myanmar",
-    "MN": "Mongolia",
-    "MO": "Macao",
-    "MP": "Northern Mariana Islands",
-    "MQ": "Martinique",
-    "MR": "Mauritania",
-    "MS": "Montserrat",
-    "MT": "Malta",
-    "MU": "Mauritius",
-    "MV": "Maldives",
-    "MW": "Malawi",
-    "MX": "Mexico",
-    "MY": "Malaysia",
-    "MZ": "Mozambique",
-    "NA": "Namibia",
-    "NC": "New Caledonia",
-    "NE": "Niger",
-    "NF": "Norfolk Island",
-    "NG": "Nigeria",
-    "NI": "Nicaragua",
-    "NL": "Netherlands",
-    "NO": "Norway",
-    "NP": "Nepal",
-    "NR": "Nauru",
-    "NU": "Niue",
-    "NZ": "New Zealand",
-    "OM": "Oman",
-    "PA": "Panama",
-    "PE": "Peru",
-    "PF": "French Polynesia",
-    "PG": "Papua New Guinea",
-    "PH": "Philippines",
-    "PK": "Pakistan",
-    "PL": "Poland",
-    "PM": "Saint Pierre and Miquelon",
-    "PN": "Pitcairn",
-    "PR": "Puerto Rico",
-    "PT": "Portugal",
-    "PW": "Palau",
-    "PY": "Paraguay",
-    "QA": "Qatar",
-    "RE": "Réunion",
-    "RO": "Romania",
-    "RS": "Serbia",
-    "RU": "Russian Federation",
-    "RW": "Rwanda",
-    "SA": "Saudi Arabia",
-    "SB": "Solomon Islands",
-    "SC": "Seychelles",
-    "SD": "Sudan",
-    "SE": "Sweden",
-    "SG": "Singapore",
-    "SH": "Saint Helena, Ascension and Tristan da Cunha",
-    "SI": "Slovenia",
-    "SJ": "Svalbard and Jan Mayen",
-    "SK": "Slovakia",
-    "SL": "Sierra Leone",
-    "SM": "San Marino",
-    "SN": "Senegal",
-    "SO": "Somalia",
-    "SR": "Suriname",
-    "SS": "South Sudan",
-    "ST": "Sao Tome and Principe",
-    "SV": "El Salvador",
-    "SX": "Sint Maarten (Dutch part)",
-    "SY": "Syrian Arab Republic",
-    "SZ": "Eswatini",
-    "TC": "Turks and Caicos Islands",
-    "TD": "Chad",
-    "TF": "French Southern and Antarctic Lands",
-    "TG": "Togo",
-    "TH": "Thailand",
-    "TJ": "Tajikistan",
-    "TK": "Tokelau",
-    "TL": "Timor-Leste",
-    "TM": "Turkmenistan",
-    "TN": "Tunisia",
-    "TO": "Tonga",
-    "TR": "Turkey",
-    "TT": "Trinidad and Tobago",
-    "TV": "Tuvalu",
-    "TZ": "Tanzania (United Republic of)",
-    "UA": "Ukraine",
-    "UG": "Uganda",
-    "UM": "United States Minor Outlying Islands",
-    "US": "United States",
-    "UY": "Uruguay",
-    "UZ": "Uzbekistan",
-    "VA": "Holy See",
-    "VC": "Saint Vincent and the Grenadines",
-    "VE": "Venezuela (Bolivarian Republic of)",
-    "VG": "British Virgin Islands",
-    "VI": "United States Virgin Islands",
-    "VN": "Viet Nam",
-    "VU": "Vanuatu",
-    "WF": "Wallis and Futuna",
-    "WS": "Samoa",
-    "YE": "Yemen",
-    "YT": "Mayotte",
-    "ZA": "South Africa",
-    "ZM": "Zambia",
-    "ZW": "Zimbabwe",
-}
+preprocess = transforms.Compose([
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                         std=[0.229, 0.224, 0.225])
+])
 
-class DeterminedPredictor:
-    def __init__(self, model, processor=AutoImageProcessor.from_pretrained("D:/resnet50-finetuned", use_fast=True), device=DEVICE):
-        self.model = model
-        self.processor = processor
-        self.device = device
-        
-    def predict(self, img, temperature, use_tta, min_confidence):
+def predict_image(model, image, processor=None, top_k=5, device=DEVICE):
+    # try:
+        new_height = HEIGHT
+        orig_width, orig_height = image.size
+        aspect_ratio = orig_width / orig_height
+        new_width = int(round(new_height * aspect_ratio))
+        resized_img = image.crop((int((orig_width-new_width)/2), 0, int((new_width/2)+new_width), 561))
         try:
-            image = img           
-            if use_tta:
-                predictions = []
-                inputs = self.processor(image, return_tensors="pt")
-                inputs = {k: v.to(self.device) for k, v in inputs.items()}
-                with torch.no_grad():
-                    outputs = self.model(**inputs)
-                    predictions.append(outputs.logits)
-                
-                flipped = image.transpose(Image.FLIP_LEFT_RIGHT)
-                inputs = self.processor(flipped, return_tensors="pt")
-                inputs = {k: v.to(self.device) for k, v in inputs.items()}
-                with torch.no_grad():
-                    outputs = self.model(**inputs)
-                    predictions.append(outputs.logits)
-                
-                avg_logits = torch.mean(torch.stack(predictions), dim=0)
-                probs = F.softmax(avg_logits / temperature, dim=-1)
-            else:
-                inputs = self.processor(image, return_tensors="pt")
-                inputs = {k: v.to(self.device) for k, v in inputs.items()}
-                with torch.no_grad():
-                    outputs = self.model(**inputs)
-                    probs = F.softmax(outputs.logits / temperature, dim=-1)
-            
-            probs = probs.cpu().numpy()[0]
-            
-            confident_predictions = []
-            for idx, prob in enumerate(probs):
-                if prob >= min_confidence:
-                    country = self.model.config.id2label[idx]
-                    confident_predictions.append((country, prob, idx))
-            
-            confident_predictions.sort(key=lambda x: x[1], reverse=True)
-            for _, (country, prob, idx) in enumerate(confident_predictions[:3]):
-                print(f"{country} // {iso_alpha2_to_country[country]}")
-            
-        except Exception as e:
-            print(f"error: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
+            inputs = processor(resized_img, return_tensors='pt')
+            inputs = {k: v.to(device) for k, v in inputs.items()}
+            print('HuggingFace AutoModel found')
+        except:
+            inputs = preprocess(resized_img).unsqueeze(0) #FIX THIS!!!!!!!!!!!!
+            inputs = inputs.to(device)
+            print('PyTorch model from checkpoint found')
+
+        with torch.no_grad():
+            try:
+                logits = model(**inputs)
+            except:
+                logits = model(inputs)
+        
+        probabilities = torch.nn.functional.softmax(logits, dim=-1)
+        top_probs, top_indices = torch.topk(probabilities, top_k)
+        top_probs = top_probs.cpu().numpy()[0]
+        top_indices = top_indices.cpu().numpy()[0]
+        
+        if hasattr(model, 'config'):
+            print("Using HuggingFace AutoConfig labels")
+        else:
+            print("Using PyTorch raw labels")
+
+        print(f"\n🔍 Predictions:")
+        for i, (prob, idx) in enumerate(zip(top_probs, top_indices)):
+            try:
+                label = model.config.id2label[idx]
+            except:
+                label = model.id2label[idx]
+            confidence = prob * 100
+            print(f"  {i+1}. {label}: {prob:.4f} ({confidence:.2f}%)")
+        
+        try:
+            top_label = model.config.id2label[top_indices[0]]
+        except:
+            top_label = model.id2label[top_indices[0]]
+        top_confidence = top_probs[0]
+        
+        return top_label, top_confidence
+        
+    # except Exception as e:
+    #     print(f"❌ Error processing image: {e}")
+    #     return None, None
