@@ -14,7 +14,7 @@ from tqdm import tqdm
 from predictor import predict_image
 from transformers import AutoImageProcessor
 
-IMG = "pics/image.jpg"   # single image path
+IMG = "pics/Ryazan-03.jpg"   # single image path
 HEIGHT = 561              # desired target height in pixels
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -55,11 +55,11 @@ iso_alpha2_to_country = {
 # --------------------------
 # Utilities
 # --------------------------
-def lowres(img: Image.Image, target_height: int = HEIGHT) -> Image.Image:
-    orig_width, orig_height = img.size
+def lowres(image: Image.Image, new_height: int = HEIGHT) -> Image.Image:
+    orig_width, orig_height = image.size
     aspect_ratio = orig_width / orig_height
-    new_width = int(round(target_height * aspect_ratio))
-    resized_img = img.resize((new_width, target_height))
+    new_width = int(round(new_height * aspect_ratio))
+    resized_img = image.crop((int((orig_width-new_width)/2), 0, int((new_width/2)+new_width), 561))
     return resized_img
 
 preprocess = transforms.Compose([
@@ -138,25 +138,16 @@ def load_model_checkpoint(path: str, device: torch.device, num_classes=56):
     model.eval()
     return model
 
-
-# --------------------------
-# Single-image embedding extraction
-# --------------------------
 def extract_sample_embedding(model: nn.Module, image_path: str, device: torch.device):
-    """
-    Returns (embedding: np.ndarray shape (1, D), resized_pil_image)
-    """
     img = Image.open(image_path).convert("RGB")
-    img_resized = lowres(img, target_height=HEIGHT)
-    tensor = preprocess(img_resized).unsqueeze(0).to(device)  # shape (1,3,H,W)
+    img_resized = lowres(img)
+    tensor = preprocess(img_resized).unsqueeze(0).to(device)
 
     with torch.no_grad():
         feats = model(tensor, return_features=True)  # Tensor (1, D)
     return feats.cpu().numpy(), img_resized
 
-# --------------------------
-# UMAP plotting helper
-# --------------------------
+
 def project_and_plot(embs: np.ndarray, sample_emb: np.ndarray,
                      id2label_map, labels,
                      show_text=True):
@@ -207,8 +198,6 @@ if __name__ == "__main__":
     ckpt_path = "D:/resnet50-finetuned_raw/resnet50_streetview.pth"
     model = load_model_checkpoint(ckpt_path, device=device, num_classes=56)
 
-    sample_emb, sample_img = extract_sample_embedding(model, IMG, device=device)
-    predict_image(image=sample_img, model=model)
+    sample_emb, sample_img = extract_sample_embedding(model, image_path=IMG, device=device)
+    predict_image(resized_img=sample_img, model=model)
     project_and_plot(embs=embeddings, sample_emb=sample_emb, id2label_map=id2label_map, labels=labels)
-
-    # processor = AutoImageProcessor.from_pretrained("D:/resnet50-finetuned", use_fast=True)

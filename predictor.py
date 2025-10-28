@@ -15,13 +15,7 @@ preprocess = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
-def predict_image(model, image, processor=None, top_k=5, device=DEVICE):
-    # try:
-        new_height = HEIGHT
-        orig_width, orig_height = image.size
-        aspect_ratio = orig_width / orig_height
-        new_width = int(round(new_height * aspect_ratio))
-        resized_img = image.crop((int((orig_width-new_width)/2), 0, int((new_width/2)+new_width), 561))
+def predict_image(model, resized_img: Image.Image, processor=None, top_k=5, device=DEVICE):
         try:
             inputs = processor(resized_img, return_tensors='pt')
             inputs = {k: v.to(device) for k, v in inputs.items()}
@@ -63,7 +57,3 @@ def predict_image(model, image, processor=None, top_k=5, device=DEVICE):
         top_confidence = top_probs[0]
         
         return top_label, top_confidence
-        
-    # except Exception as e:
-    #     print(f"❌ Error processing image: {e}")
-    #     return None, None
