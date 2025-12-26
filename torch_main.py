@@ -14,6 +14,7 @@ from tqdm import tqdm
 from predictor import predict_image
 from transformers import AutoImageProcessor
 
+imgs = ["pics/image.png", "pics/Ryazan-03.jpg"]
 IMG = "pics/image.png"   # single image path
 HEIGHT = 561              # desired target height in pixels
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -197,8 +198,11 @@ if __name__ == "__main__":
 
     ckpt_path = "D:/resnet50-finetuned_raw/resnet50_streetview.pth"
     model = load_model_checkpoint(ckpt_path, device=device, num_classes=56)
+    sample_imgs = []
 
-    sample_emb, sample_img = extract_sample_embedding(model, image_path=IMG, device=device)
-    predict_image(resized_img=sample_img, model=model)
+    for i in enumerate(imgs, 0):
+        emb, img = extract_sample_embedding(model, image_path=imgs[int(i[0])], device=device)
+        sample_imgs.append(img)
+    predict_image(samples=sample_imgs, model=model)
 
     # project_and_plot(embs=embeddings, sample_emb=sample_emb, id2label_map=id2label_map, labels=labels)

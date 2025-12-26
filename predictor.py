@@ -1,28 +1,11 @@
 import torch
 from transformers import AutoImageProcessor, ResNetForImageClassification, AutoConfig
 from PIL import Image
-import PIL
-import os
 import torch.nn.functional as F
 from torchvision import transforms
 
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-iso_alpha2_to_country = {
-    "AD": "Andorra", "AE": "United Arab Emirates", "AR": "Argentina", "AU": "Australia",
-    "BD": "Bangladesh", "BE": "Belgium", "BG": "Bulgaria", "BR": "Brazil", "BT": "Bhutan",
-    "BW": "Botswana", "CA": "Canada", "CH": "Switzerland", "CL": "Chile", "CO": "Colombia",
-    "CZ": "Czech Republic", "DE": "Germany", "DK": "Denmark", "EE": "Estonia", "ES": "Spain",
-    "FI": "Finland", "FR": "France", "GB": "United Kingdom", "GR": "Greece", "HK": "Hong Kong",
-    "HR": "Croatia", "HU": "Hungary", "ID": "Indonesia", "IE": "Ireland", "IL": "Israel",
-    "IS": "Iceland", "IT": "Italy", "JP": "Japan", "KH": "Cambodia", "KR": "Republic of Korea",
-    "LT": "Lithuania", "LV": "Latvia", "MX": "Mexico", "MY": "Malaysia", "NL": "Netherlands",
-    "NO": "Norway", "NZ": "New Zealand", "PE": "Peru", "PL": "Poland", "PT": "Portugal",
-    "RO": "Romania", "RU": "Russian Federation", "SE": "Sweden", "SG": "Singapore",
-    "SI": "Slovenia", "SK": "Slovakia", "SZ": "Eswatini", "TH": "Thailand", "TW": "Taiwan",
-    "UA": "Ukraine", "US": "United States", "ZA": "South Africa"
-}
 
 regions = {
     "Europe": ["AD", "BE", "BG", "CH", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GR", "HR", "HU", "IE", "IS", "IT", "LT", "LV", "NL", "NO", "PL", "PT", "RO", "RU", "SE", "SI", "SK", "UA"],
@@ -39,15 +22,35 @@ preprocess = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
-def predict_image(model, resized_img: Image.Image, processor=None, top_k=5, device=DEVICE):
+def predict_image(model, samples, processor=None, top_k=3, device=DEVICE):
+    state_score = {
+    "AD":0, "AE":0, "AR":0, "AU":0,
+    "BD":0, "BE":0, "BG":0, "BR":0, "BT":0,
+    "BW":0, "CA":0, "CH":0, "CL":0, "CO":0,
+    "CZ":0, "DE":0, "DK":0, "EE":0, "ES":0,
+    "FI":0, "FR":0, "GB":0, "GR":0, "HK":0,
+    "HR":0, "HU":0, "ID":0, "IE":0, "IL":0,
+    "IS":0, "IT":0, "JP": 0, "KH":0, "KR":0,
+    "LT":0, "LV":0, "MX":0, "MY":0, "NL":0,
+    "NO":0, "NZ":0, "PE":0, "PL":0, "PT":0,
+    "RO":0, "RU":0, "SE":0, "SG":0,
+    "SI":0, "SK":0, "SZ":0, "TH":0, "TW":0,
+    "UA":0, "US":0, "ZA":0
+}
+    eu_score = 0
+    asia_score = 0
+    ocean_score = 0
+    na_score = 0
+    sa_score = 0
+    africa_score = 0
+    for x in enumerate(samples, 0):
+        resized_img = samples[x[0]]
         try:
             inputs = processor(resized_img, return_tensors='pt')
             inputs = {k: v.to(device) for k, v in inputs.items()}
-            print('HuggingFace AutoModel found')
         except:
-            inputs = preprocess(resized_img).unsqueeze(0) #FIX THIS!!!!!!!!!!!!
+            inputs = preprocess(resized_img).unsqueeze(0)
             inputs = inputs.to(device)
-            print('PyTorch model from checkpoint found')
 
         with torch.no_grad():
             try:
@@ -64,28 +67,14 @@ def predict_image(model, resized_img: Image.Image, processor=None, top_k=5, devi
         reg_top_probs, reg_top_indices = torch.topk(probabilities, 56)
         reg_top_probs = reg_top_probs.cpu().numpy()[0]
         reg_top_indices = reg_top_indices.cpu().numpy()[0]
-        
-        if hasattr(model, 'config'):
-            print("Using HuggingFace AutoConfig labels")
-        else:
-            print("Using PyTorch raw labels")
 
-        print(f"\nParticular predictions:")
         for i, (prob, idx) in enumerate(zip(top_probs, top_indices)):
             try:
                 label = model.config.id2label[idx]
             except:
                 label = model.id2label[idx]
-            print(f"    {label}: {prob*100:.2f}")
+            state_score[label] = state_score[label] + prob/len(samples)
 
-        eu_score = 0
-        asia_score = 0
-        ocean_score = 0
-        na_score = 0
-        sa_score = 0
-        africa_score = 0
-
-        print(f"\nRegional predictions:")
         for i, (prob, idx) in enumerate(zip(reg_top_probs, reg_top_indices)):
             try:
                 label = model.config.id2label[idx]
@@ -106,11 +95,21 @@ def predict_image(model, resized_img: Image.Image, processor=None, top_k=5, devi
                 case country if country in regions["Africa"]:
                     africa_score = africa_score + prob
 
-        print(f"    Europe: {eu_score*100:.2f}")
-        print(f"    Asia: {asia_score*100:.2f}")
-        print(f"    North America: {na_score*100:.2f}")
-        print(f"    South America: {sa_score*100:.2f}")
-        print(f"    Oceania: {ocean_score*100:.2f}")
-        print(f"    Africa: {africa_score*100:.2f}")
-        
-        
+    preds = dict(sorted(
+    ((k, float(v)) for k, v in state_score.items() if v != 0),
+    key=lambda x: x[1],
+    reverse=True))
+
+    print(f"\nRegional predictions:")
+    print(f"    Europe: {eu_score*100/len(samples):.2f}")
+    print(f"    Asia: {asia_score*100/len(samples):.2f}")
+    print(f"    North America: {na_score*100/len(samples):.2f}")
+    print(f"    South America: {sa_score*100/len(samples):.2f}")
+    print(f"    Oceania: {ocean_score*100/len(samples):.2f}")
+    print(f"    Africa: {africa_score*100/len(samples):.2f}")
+
+    print(f"\nParticular predictions:")
+    for y in preds:
+        print(f"    {y}: {preds[y]:.2f}")
+
+    
