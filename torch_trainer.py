@@ -43,7 +43,7 @@ if __name__ == "__main__":
     DATASET_NAME = "stochastic/random_streetview_images_pano_v0.0.2"
     OUTPUT_DIR = Path("/resnet50-finetuned_raw")
     BATCH_SIZE = 256       # bigger batch for better GPU utilization
-    NUM_EPOCHS = 16      # for 36 hours
+    NUM_EPOCHS = 16      # for 48 hours
     LR = 1e-4
     IMG_CROP = (1017, 0, 2033, 561)  # (left, top, right, bottom)
     SEED = 42

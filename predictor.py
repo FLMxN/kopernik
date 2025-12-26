@@ -41,7 +41,7 @@ def predict_image(model, resized_img: Image.Image, processor=None, top_k=5, devi
         else:
             print("Using PyTorch raw labels")
 
-        print(f"\n🔍 Predictions:")
+        print(f"\nPredictions via preprocessor:")
         for i, (prob, idx) in enumerate(zip(top_probs, top_indices)):
             try:
                 label = model.config.id2label[idx]
