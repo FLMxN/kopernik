@@ -15,7 +15,6 @@ from predictor import predict_image
 from transformers import AutoImageProcessor
 
 imgs = ["pics/t3.png"]
-IMG = "pics/image.png"   # single image path
 HEIGHT = 561              # desired target height in pixels
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -79,33 +78,20 @@ def clean_state_dict_keys(state_dict: dict) -> dict:
     return new_sd
 
 class ResNet50FeatureExtractor(nn.Module):
-
-    def __init__(self, num_classes=56):
+    def __init__(self, num_classes):
         super().__init__()
-        # Using the standard torchvision ResNet50 backbone
-        backbone = models.resnet50(weights=None)
-        num_ftrs = backbone.fc.in_features
-        backbone.fc = nn.Linear(num_ftrs, num_classes)
-        self.backbone = backbone
-        self.id2label = id2label_map
-
-    def forward(self, x, return_features=False):
-        # replicate torchvision forward until avgpool to extract features
-        x = self.backbone.conv1(x)
-        x = self.backbone.bn1(x)
-        x = self.backbone.relu(x)
-        x = self.backbone.maxpool(x)
-
-        x = self.backbone.layer1(x)
-        x = self.backbone.layer2(x)
-        x = self.backbone.layer3(x)
-        x = self.backbone.layer4(x)
-
-        pooled = self.backbone.avgpool(x)
-        feats = torch.flatten(pooled, 1)  # shape (B, num_ftrs)
-        logits = self.backbone.fc(feats)
-
-        return feats if return_features else logits
+        self.resnet = models.resnet50(weights=None)
+        in_features = self.resnet.fc.in_features
+        self.resnet.fc = nn.Identity()
+        
+        self.country_head = nn.Linear(in_features, num_classes)
+        self.coordinate_head = nn.Linear(in_features, 2)  # (longitude, latitude)
+    
+    def forward(self, x):
+        features = self.resnet(x)
+        country_logits = self.country_head(features)
+        coordinates = self.coordinate_head(features)  # Regression output
+        return country_logits, coordinates
 
 def load_model_checkpoint(path: str, device: torch.device, num_classes=56):
     model = ResNet50FeatureExtractor(num_classes=num_classes)
@@ -137,7 +123,7 @@ def load_model_checkpoint(path: str, device: torch.device, num_classes=56):
 
     model.to(DEVICE)
     model.eval()
-    return model
+    return model, checkpoint
 
 def extract_sample_embedding(model: nn.Module, image_path: str, device: torch.device):
     img = Image.open(image_path).convert("RGB")
@@ -145,7 +131,7 @@ def extract_sample_embedding(model: nn.Module, image_path: str, device: torch.de
     tensor = preprocess(img_resized).unsqueeze(0).to(device)
 
     with torch.no_grad():
-        feats = model(tensor, return_features=True)  # Tensor (1, D)
+        feats = model(tensor)  # Tensor (1, D)
     return feats.cpu().numpy(), img_resized
 
 
@@ -196,13 +182,14 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print("Using device:", device)
 
-    ckpt_path = "D:/resnet50-finetuned_raw/resnet50_streetview.pth"
-    model = load_model_checkpoint(ckpt_path, device=device, num_classes=56)
+    ckpt_path = "E://resnet50_streetview_feature.pth"
+    model, ckpt = load_model_checkpoint(ckpt_path, device=device, num_classes=56)
     sample_imgs = []
 
     for i in enumerate(imgs, 0):
         emb, img = extract_sample_embedding(model, image_path=imgs[int(i[0])], device=device)
         sample_imgs.append(img)
-    predict_image(samples=sample_imgs, model=model)
+
+    predict_image(samples=sample_imgs, model=model, checkpoint=ckpt)
 
     # project_and_plot(embs=embeddings, sample_emb=sample_emb, id2label_map=id2label_map, labels=labels)

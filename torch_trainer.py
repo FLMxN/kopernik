@@ -147,5 +147,10 @@ if __name__ == "__main__":
     print(f"Validation Accuracy: {acc:.4f}")
 
     # ---------------- SAVE ----------------
-    torch.save(model.state_dict(), "resnet50_streetview_feature.pth")
+    torch.save({
+    'model_state_dict': model.state_dict(),
+    'label_mapping': id2label,
+    'longitude_mapping': {i: l for l, i in longitude2id.items()},  # Reverse mapping
+    'latitude_mapping': {i: l for l, i in latitude2id.items()},    # Reverse mapping
+}, "resnet-50_streetview_feature.pth")
     print(f"Model saved")

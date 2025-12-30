@@ -22,7 +22,10 @@ preprocess = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
-def predict_image(model, samples, processor=None, top_k=3, device=DEVICE):
+def predict_image(model, samples, checkpoint, processor=None, top_k=3, device=DEVICE):
+    id2longitude = checkpoint['longitude_mapping']
+    id2latitude = checkpoint['latitude_mapping']
+
     state_score = {
     "AD":0, "AE":0, "AR":0, "AU":0,
     "BD":0, "BE":0, "BG":0, "BR":0, "BT":0,
@@ -43,6 +46,7 @@ def predict_image(model, samples, processor=None, top_k=3, device=DEVICE):
     na_score = 0
     sa_score = 0
     africa_score = 0
+
     for x in enumerate(samples, 0):
         resized_img = samples[x[0]]
         try:
@@ -54,11 +58,11 @@ def predict_image(model, samples, processor=None, top_k=3, device=DEVICE):
 
         with torch.no_grad():
             try:
-                logits = model(**inputs)
+                country_logits, longitude_logits, latitude_logits = model(**inputs)
             except:
-                logits = model(inputs)
+                country_logits, longitude_logits, latitude_logits = model(inputs)
         
-        probabilities = torch.nn.functional.softmax(logits, dim=-1)
+        probabilities = torch.nn.functional.softmax(country_logits, dim=-1)
 
         top_probs, top_indices = torch.topk(probabilities, top_k)
         top_probs = top_probs.cpu().numpy()[0]
@@ -95,10 +99,23 @@ def predict_image(model, samples, processor=None, top_k=3, device=DEVICE):
                 case country if country in regions["Africa"]:
                     africa_score = africa_score + prob
 
+        longitude_probs = torch.softmax(longitude_logits, dim=-1)
+        latitude_probs = torch.softmax(latitude_logits, dim=-1)
+
+        top_long_idx = torch.argmax(longitude_probs).item()
+        top_lat_idx = torch.argmax(latitude_probs).item()
+
+        longitude = id2longitude[top_long_idx]  # This will be a string
+        latitude = id2latitude[top_lat_idx]      # This will be a string
+
+
     preds = dict(sorted(
     ((k, float(v)) for k, v in state_score.items() if v != 0),
     key=lambda x: x[1],
     reverse=True))
+
+    print(f"\nLongitude: {longitude}")
+    print(f"\nLatitude: {latitude}")
 
     print(f"\nRegional predictions:")
     print(f"    Europe: {eu_score*100/len(samples):.2f}")
