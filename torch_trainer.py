@@ -7,6 +7,8 @@ from PIL import Image
 from pathlib import Path
 import gc, random, numpy as np
 from tqdm import tqdm
+import warnings
+warnings.filterwarnings('ignore')
 
 print(f"CPU specs: {torch.backends.cpu.get_cpu_capability()}")
 print(f"cuDNN: {torch.backends.cudnn.is_available()}")
@@ -32,7 +34,6 @@ class StreetViewDataset(Dataset):
         label = self.label2id[row['country_iso_alpha2']]
         
         # Coordinates (as continuous values)
-        # Convert to float and normalize to [-1, 1]
         longitude = float(row['longitude'])
         latitude = float(row['latitude'])
         
@@ -53,41 +54,71 @@ def set_seed(seed):
 class ResNet50MultiTask(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
-        self.resnet = models.resnet50(weights=None)  # Or weights='IMAGENET1K_V1'
+        # Load ImageNet pretrained ResNet50
+        self.resnet = models.resnet50(weights='IMAGENET1K_V1')
         in_features = self.resnet.fc.in_features
         
-        # Keep the backbone for feature extraction
+        # Replace fc layer with Identity for feature extraction
         self.resnet.fc = nn.Identity()
         
-        # Two heads for multi-task learning
+        # Country classification head
         self.country_head = nn.Linear(in_features, num_classes)
-        self.coordinate_head = nn.Linear(in_features, 2)  # For (longitude, latitude)
+        
+        # Coordinate regression head with better initialization
+        self.coordinate_head = nn.Linear(in_features, 2)
+        
+        # Initialize coordinate head to predict reasonable starting location
+        self._initialize_heads()
+    
+    def _initialize_heads(self):
+        """Initialize heads with smart starting values"""
+        nn.init.normal_(self.country_head.weight, mean=0.0, std=0.01)
+        nn.init.zeros_(self.country_head.bias)
+        
+        nn.init.normal_(self.coordinate_head.weight, mean=0.0, std=0.001)
+        nn.init.zeros_(self.coordinate_head.bias)
+
     
     def forward(self, x):
         features = self.resnet(x)
         country_logits = self.country_head(features)
-        coordinates = torch.tanh(self.coordinate_head(features))  # Bound to [-1, 1]
+
+        coordinates = torch.tanh(self.coordinate_head(features))
+        
         return country_logits, coordinates
 
 if __name__ == "__main__":
     # ---------------- CONFIG ----------------
     DATASET_NAME = "stochastic/random_streetview_images_pano_v0.0.2"
-    OUTPUT_DIR = Path("/resnet50-finetuned_raw")
-    BATCH_SIZE = 2       # Increased for better GPU utilization
-    NUM_EPOCHS = 1      # More epochs for proper training
-    LR = 1e-4
+    BATCH_SIZE = 32                     # CRITICAL: Increased from 2
+    NUM_EPOCHS = 64                    # CRITICAL: Increased from 1
+    LR = 3e-4                           # Slightly higher learning rate
+    GRADIENT_ACCUMULATION_STEPS = 1     # Effective batch size = 64
     IMG_CROP = (1017, 0, 2033, 561)
     SEED = 42
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     NUM_WORKERS = 4
-    FP16 = True
-    COUNTRY_LOSS_WEIGHT = 1.0
-    COORD_LOSS_WEIGHT = 0.5  # Adjust based on importance
-    # ---------------------------------------
     
-    set_seed(42)
+    COUNTRY_LOSS_WEIGHT = 1.5
+    COORD_LOSS_WEIGHT = 0.5
+    
+    FP16 = True
+    
+    PATIENCE = 16
+    MIN_DELTA = 0.001
+    # ------------------------------------------------
+    
+    set_seed(SEED)
+    
+    print(f"🚀 Starting training with:")
+    print(f"   Batch size: {BATCH_SIZE}")
+    print(f"   Gradient accumulation: {GRADIENT_ACCUMULATION_STEPS}")
+    print(f"   Effective batch size: {BATCH_SIZE * GRADIENT_ACCUMULATION_STEPS}")
+    print(f"   Epochs: {NUM_EPOCHS}")
+    print(f"   Learning rate: {LR}")
     
     # Load dataset
+    print("\n📂 Loading dataset...")
     full_dataset = load_dataset(DATASET_NAME)["train"]
     
     # Split
@@ -106,15 +137,30 @@ if __name__ == "__main__":
     label2id = {l: i for i, l in enumerate(labels)}
     id2label = {i: l for l, i in label2id.items()}
     num_labels = len(labels)
-    print(f"Number of countries: {num_labels}")
-    print(f"Total samples: {len(full_dataset)}")
-    print(f"Training samples: {len(train_hf)}")
-    print(f"Validation samples: {len(val_hf)}")
     
-    # Transforms
+    print(f"\n📊 Dataset statistics:")
+    print(f"   Total countries: {num_labels}")
+    print(f"   Total samples: {len(full_dataset):,}")
+    print(f"   Training samples: {len(train_hf):,}")
+    print(f"   Validation samples: {len(val_hf):,}")
+    
+    # # Calculate coordinate statistics for normalization
+    # print("\n🗺️ Calculating coordinate statistics...")
+    # longitudes = [float(row['longitude']) for row in full_dataset]
+    # latitudes = [float(row['latitude']) for row in full_dataset]
+    
+    # long_mean, long_std = np.mean(longitudes), np.std(longitudes)
+    # lat_mean, lat_std = np.mean(latitudes), np.std(latitudes)
+    
+    # print(f"   Longitude: mean={long_mean:.2f}°, std={long_std:.2f}°")
+    # print(f"   Latitude: mean={lat_mean:.2f}°, std={lat_std:.2f}°")
+    # print(f"   Normalized means: long={long_mean/180:.3f}, lat={lat_mean/90:.3f}")
+    
+    # Enhanced transforms with more augmentations
     transform = transforms.Compose([
         transforms.RandomHorizontalFlip(p=0.5),
-        transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
+        transforms.ColorJitter(brightness=0.33, contrast=0.33, saturation=0.33, hue=0.1),
+        transforms.RandomRotation(degrees=5),
         transforms.ToTensor(),
         transforms.Normalize(mean=[0.485, 0.456, 0.406],
                            std=[0.229, 0.224, 0.225])
@@ -134,36 +180,57 @@ if __name__ == "__main__":
         train_dataset, 
         batch_size=BATCH_SIZE, 
         shuffle=True,
-        num_workers=NUM_WORKERS, 
-        pin_memory=True
+        num_workers=NUM_WORKERS,
+        pin_memory=True,
+        persistent_workers=True
     )
     
     val_loader = DataLoader(
         val_dataset, 
         batch_size=BATCH_SIZE, 
         shuffle=False,
-        num_workers=NUM_WORKERS, 
-        pin_memory=True
+        num_workers=NUM_WORKERS,
+        pin_memory=True,
+        persistent_workers=True
     )
     
     # ---------------- MODEL ----------------
+    print("\n🧠 Creating model with ImageNet pretrained weights...")
     model = ResNet50MultiTask(num_classes=num_labels)
     model = model.to(DEVICE)
     
-    # Load pretrained weights (optional)
-    # pretrained = models.resnet50(weights='IMAGENET1K_V1')
-    # model.resnet.load_state_dict(pretrained.state_dict(), strict=False)
+    # Count parameters
+    total_params = sum(p.numel() for p in model.parameters())
+    trainable_params = sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(f"   Total parameters: {total_params:,}")
+    print(f"   Trainable parameters: {trainable_params:,}")
     
     # ---------------- LOSSES & OPTIMIZER ----------------
     criterion_country = nn.CrossEntropyLoss()
-    criterion_coord = nn.MSELoss()  # Mean Squared Error for regression
+    criterion_coord = nn.MSELoss()
     
-    optimizer = optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-4)
-    scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=NUM_EPOCHS)
+    # Use AdamW with weight decay
+    optimizer = optim.AdamW(
+        model.parameters(), 
+        lr=LR, 
+        weight_decay=1e-4,
+        betas=(0.9, 0.999)
+    )
+    
+    # Cosine annealing with warm restarts
+    scheduler = optim.lr_scheduler.CosineAnnealingWarmRestarts(
+        optimizer, 
+        T_0=8,  # Restart every 10 epochs
+        T_mult=2,
+        eta_min=1e-6
+    )
+    
     scaler = torch.GradScaler(enabled=FP16)
     
     # ---------------- TRAINING LOOP ----------------
+    print("\n🚂 Starting training...")
     best_val_acc = 0.0
+    patience_counter = 0
     
     for epoch in range(NUM_EPOCHS):
         # Training
@@ -172,13 +239,13 @@ if __name__ == "__main__":
         train_coord_loss = 0.0
         train_total_loss = 0.0
         
+        optimizer.zero_grad()
+        
         pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{NUM_EPOCHS}')
-        for imgs, country_labels, coords in pbar:
+        for batch_idx, (imgs, country_labels, coords) in enumerate(pbar):
             imgs = imgs.to(DEVICE, non_blocking=True)
             country_labels = country_labels.to(DEVICE, non_blocking=True)
             coords = coords.to(DEVICE, non_blocking=True)
-            
-            optimizer.zero_grad()
             
             with torch.autocast(device_type="cuda", enabled=FP16):
                 # Forward pass
@@ -189,23 +256,30 @@ if __name__ == "__main__":
                 loss_coord = criterion_coord(pred_coords, coords)
                 
                 # Combined loss
-                loss = COUNTRY_LOSS_WEIGHT * loss_country + COORD_LOSS_WEIGHT * loss_coord
+                loss = (COUNTRY_LOSS_WEIGHT * loss_country + 
+                       COORD_LOSS_WEIGHT * loss_coord) / GRADIENT_ACCUMULATION_STEPS
             
-            # Backward pass
+            # Backward pass with gradient accumulation
             scaler.scale(loss).backward()
-            scaler.step(optimizer)
-            scaler.update()
+            
+            # Update weights every GRADIENT_ACCUMULATION_STEPS
+            if (batch_idx + 1) % GRADIENT_ACCUMULATION_STEPS == 0:
+                scaler.unscale_(optimizer)
+                torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+                scaler.step(optimizer)
+                scaler.update()
+                optimizer.zero_grad()
             
             # Track losses
-            train_country_loss += loss_country.item()
-            train_coord_loss += loss_coord.item()
-            train_total_loss += loss.item()
+            train_country_loss += loss_country.item() * GRADIENT_ACCUMULATION_STEPS
+            train_coord_loss += loss_coord.item() * GRADIENT_ACCUMULATION_STEPS
+            train_total_loss += loss.item() * GRADIENT_ACCUMULATION_STEPS
             
             # Update progress bar
             pbar.set_postfix({
                 'country_loss': loss_country.item(),
                 'coord_loss': loss_coord.item(),
-                'total_loss': loss.item()
+                'lr': optimizer.param_groups[0]['lr']
             })
         
         scheduler.step()
@@ -232,18 +306,28 @@ if __name__ == "__main__":
                 # Coordinate loss
                 val_coord_loss += criterion_coord(pred_coords, coords).item()
         
+        # Calculate metrics
+        train_country_loss_avg = train_country_loss / len(train_loader)
+        train_coord_loss_avg = train_coord_loss / len(train_loader)
+        train_total_loss_avg = train_total_loss / len(train_loader)
+        
         val_acc = val_country_correct / val_total
         avg_val_coord_loss = val_coord_loss / len(val_loader)
         
-        print(f"\nEpoch {epoch+1}/{NUM_EPOCHS}:")
-        print(f"  Train - Country Loss: {train_country_loss/len(train_loader):.4f}, "
-              f"Coord Loss: {train_coord_loss/len(train_loader):.4f}, "
-              f"Total Loss: {train_total_loss/len(train_loader):.4f}")
-        print(f"  Val - Accuracy: {val_acc:.4f}, Coord Loss: {avg_val_coord_loss:.4f}")
+        print(f"\n📊 Epoch {epoch+1}/{NUM_EPOCHS}:")
+        print(f"   Train - Country Loss: {train_country_loss_avg:.4f}, "
+              f"Coord Loss: {train_coord_loss_avg:.4f}, "
+              f"Total Loss: {train_total_loss_avg:.4f}")
+        print(f"   Val - Accuracy: {val_acc:.4f} ({val_country_correct}/{val_total}), "
+              f"Coord Loss: {avg_val_coord_loss:.4f}")
+        print(f"   Learning rate: {optimizer.param_groups[0]['lr']:.2e}")
         
-        # Save best model
-        if val_acc > best_val_acc:
+        # Early stopping check
+        if val_acc > best_val_acc + MIN_DELTA:
             best_val_acc = val_acc
+            patience_counter = 0
+            
+            # Save best model
             torch.save({
                 'epoch': epoch,
                 'model_state_dict': model.state_dict(),
@@ -251,8 +335,19 @@ if __name__ == "__main__":
                 'val_acc': val_acc,
                 'val_coord_loss': avg_val_coord_loss,
                 'label_mapping': id2label,
-            }, "resnet50_streetview_multi_task.pth")
-            print(f"  💾 Saved best model with val_acc: {val_acc:.4f}")
+                'config': {
+                    'batch_size': BATCH_SIZE,
+                    'learning_rate': LR,
+                    'country_loss_weight': COUNTRY_LOSS_WEIGHT,
+                    'coord_loss_weight': COORD_LOSS_WEIGHT,
+                }
+            }, "resnet50_streetview_imagenet1k.pth")
+            print(f"   💾 Saved BEST model with val_acc: {val_acc:.4f}")
+        else:
+            patience_counter += 1
+            if patience_counter >= PATIENCE:
+                print(f"   ⏹️ Early stopping triggered after {epoch+1} epochs")
+                break
     
     print(f"\n✅ Training completed!")
-    print(f"Best validation accuracy: {best_val_acc:.4f}")
+    print(f"   Best validation accuracy: {best_val_acc:.4f}")
