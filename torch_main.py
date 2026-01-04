@@ -14,7 +14,7 @@ from tqdm import tqdm
 from predictor import predict_image
 from transformers import AutoImageProcessor
 
-imgs = ["pics/image.png"]
+imgs = ["visualizer/features_52.png"]
 # imgs = ["pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/ryazan21080-371224838.jpg", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -215,7 +215,7 @@ def project_and_plot(embs: np.ndarray, sample_emb: np.ndarray,
     plt.title("UMAP projection (centroids + sample)")
     plt.show()
 
-def diagnose_model(model, checkpoint, do=False):
+def diagnose_model(model, checkpoint):
     print("\n🔍 MODEL DIAGNOSTICS 🔍")
     
     # 1. Check model structure
@@ -244,8 +244,6 @@ def diagnose_model(model, checkpoint, do=False):
     if 'val_coord_loss' in checkpoint:
         print(f"Checkpoint coordinate loss: {checkpoint['val_coord_loss']:.4f}")
 
-# Call it in your main
-
 if __name__ == "__main__":
     if os.path.exists(str(Path(__file__).absolute().parent) + "/np_cache/embeddings.npy"):
         embeddings = np.load("np_cache/embeddings.npy")
@@ -265,9 +263,7 @@ if __name__ == "__main__":
 
     predict_image(samples=sample_imgs, model=model, checkpoint=ckpt)
 
-    diagnose_model(model, ckpt)
-
-
-    # project_and_plot(embs=embeddings, sample_emb=sample_emb, id2label_map=id2label_map, labels=labels)
+    # diagnose_model(model, ckpt)
+    # project_and_plot(embs=embeddings, sample_emb=np.array(img), id2label_map=id2label_map, labels=labels)
 
     
