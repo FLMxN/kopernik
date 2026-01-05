@@ -24,8 +24,8 @@ from datasets import load_dataset
 #         print(i)
 #         imgs.append(example["image"])
 
-imgs = ["pics/image.png"]
-# imgs = ["pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/ryazan21080-371224838.jpg", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
+# imgs = ["visualizer/features_33.png"]
+imgs = ["pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/ryazan21080-371224838.jpg", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -63,13 +63,17 @@ iso_alpha2_to_country = {
     "UA": "Ukraine", "US": "United States", "ZA": "South Africa"
 }
 
-def lowres(image: Image.Image, new_height: int = HEIGHT) -> Image.Image:
-    orig_width, orig_height = image.size
-    aspect_ratio = orig_width / orig_height
-    new_width = int(round(new_height * aspect_ratio))
-    resized_img = image.crop((int((orig_width-new_width)/2), 0, int((new_width/2)+new_width), 561))
-    return resized_img
+def crop_resize(image: Image.Image, size = (HEIGHT, HEIGHT)) -> Image.Image:
+    w, h = image.size
+    new_h = HEIGHT
+    new_w = int(w * (new_h / h))
+    out = image.resize((new_w, new_h), Image.BICUBIC)
+    return out
 
+def stretch_crop(image: Image.Image, size = (round(HEIGHT*(16/9)), HEIGHT)) -> Image.Image:
+    res = image.resize(size)
+    return res
+ 
 preprocess = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
@@ -265,11 +269,12 @@ if __name__ == "__main__":
     sample_imgs = []
 
     for i in enumerate(imgs, 0):
-        img = lowres(Image.open(i[1]).convert("RGB"))
+        img = crop_resize(Image.open(i[1]).convert("RGB"))
+        img.show()
         sample_imgs.append(img)
 
     # for i in enumerate(imgs, 0):
-    #     img = lowres(i[1]).convert("RGB")
+    #     img = resize(i[1]).convert("RGB")
     #     sample_imgs.append(img)
 
     predict_image(samples=sample_imgs, model=model, checkpoint=ckpt)

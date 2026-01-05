@@ -23,7 +23,7 @@ preprocess = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
-def predict_image(model, samples, checkpoint, processor=None, top_k=5, device=DEVICE):
+def predict_image(model, samples, checkpoint, processor=None, top_k=3, device=DEVICE):
 
     state_score = {
     "AD":0, "AE":0, "AR":0, "AU":0,
@@ -51,12 +51,8 @@ def predict_image(model, samples, checkpoint, processor=None, top_k=5, device=DE
 
     for x in enumerate(samples, 0):
         resized_img = samples[x[0]]
-        try:
-            inputs = processor(resized_img, return_tensors='pt')
-            inputs = {k: v.to(device) for k, v in inputs.items()}
-        except:
-            inputs = preprocess(resized_img).unsqueeze(0)
-            inputs = inputs.to(device)
+        inputs = preprocess(resized_img).unsqueeze(0)
+        inputs = inputs.to(device)
 
         with torch.no_grad():
             try:
