@@ -154,12 +154,23 @@ Particular predictions:
 Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany** (DE) and **Czech Republic** (CZ), followed up by **Slovenia** (SI), **Portugal** (PT) and **Andorra** (AD). All labels respect the naming standart of [**ISO 3166-1 alpha-2**](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
 
 ## Understanding predictions and labels
+> [!NOTE]
+> This section is constantly improving and getting new updates, based on tests and feedback.
+
 > [!IMPORTANT]
 > When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer model](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
 
 To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
-+ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BH), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are probably <ins>*invalid*</ins> and serve no meaning due to lack of images' informative features.
++ <ins>**Null point attractors:**</ins> **Poland** (PL), **New Zealand** (NZ), **Bhutan** (BH), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are probably <ins>*invalid*</ins> and serve no meaning due to lack of images' informative features.
+  
 + <ins>**Common attractors:**</ins>
   - **Taiwan** (TW) and **South Korea** (KR) labels represent features of developed mostly Asian countries, although certain European or American landscapes can fit into this space as well. More often than not represents large urban centres of China, India, Japan, Australia, USA and Russia.
   - **Czech Republic** (CZ) label represents features of mostly post-soviet countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents rural or small urban centres of Russia, Ukraine, Belarus, Poland, Estonia, Latvia and Lithuania.
-  - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark and Iceland.
+  - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark, Iceland and Russia.
+  - **Spain** (ES) label represents features of mostly European countries, although certain American landscapes can fit into this space as well. More often than not represents urban centres of France, Spain, Portugal and Italy.
+
++ <ins>**Particular attractors:**</ins>
+  - **Botswana** (BW) label may represent features of rural or small urban centres of Japan.
+  - **Mexico** (MX) label may represent features of rural or small urban centres of South America.
+  - **Romania** (RO) label may represent features of highways or other kind of purely road images.
+  - **Canada** (CA) label may represent features of neighbourhoods in USA.
