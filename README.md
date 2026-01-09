@@ -26,7 +26,7 @@ Kopernik mostly requires a standart package of machine learning and image proces
 pip install torch torchvision scikit-learn datasets numpy tqdm pathlib
 ```
 ### Model setup
-In order to use pretrained fine-tuned model of the latest developer version, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview/blob/main/resnet50_streetview_imagenet1k.pth)
+In order to use pretrained fine-tuned model of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview/blob/main/resnet50_streetview_imagenet1k.pth)
 
 Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py)
 
@@ -36,7 +36,8 @@ Before start, make sure to insert the path to your model and sample pictures in 
 ### Startup
 If you completed [model setup](#model-setup) properly, inference requires no any additional preparations --> launch [torch_main.py](torch_main.py) and voila!
 ### Output
-***Disclaimer***: <ins>Please be aware that any coordinate-related output contains no meaningful information by the day of Jan 9, 2026</ins>
+> [!WARNING]
+> Please be aware that any coordinate-related output contains no meaningful information by the day of ***Jan 9, 2026***
 
 **Example ([pics/t2.png](pics/t2.png))**
 ```
@@ -100,7 +101,7 @@ Checkpoint structure:
   label_mapping: dict with 56 keys
   config: dict with 4 keys
 ```
-[Developer model](#model-setup) was trained through 56 epochs using CUDA and reached validation accuracy of 47% among 56 countries.
+Debug data, optional. [Developer model](#model-setup) was trained through 56 epochs using CUDA and reached validation accuracy of 47% among 56 countries.
 
 ```
 ✅ Extracted model_state_dict from checkpoint
@@ -129,7 +130,7 @@ Coordinates of (1, <PIL.Image.Image image mode=RGB size=997x561 at 0x16768D72900
 
 Coordinates: -0.08373452723026276, 0.3891593813896179
 ```
-Effectively useless data by the date of Jan 09, 2026. [Developer model](#model-setup) has loaded and processed [t2.png](pics/t2.png) with 2 different scaling strategies (stretch and crop). Coordinate-related data serves no meaning (yet).
+Effectively useless data by the date of ***Jan 09, 2026***. [Developer model](#model-setup) has loaded and processed [t2.png](pics/t2.png) with 2 different scaling strategies (stretch and crop). Coordinate-related data serves no meaning (yet).
 
 ```
 Regional predictions:
@@ -150,6 +151,15 @@ Particular predictions:
     PT: 5.97
     AD: 1.93
 ```
-Features of [t2.png](pics/t2.png) seem to mostly represent features of Germany (DE) and Czech Republic (CZ), followed by Slovenia (SI), Portugal (PT) and Andorra (AD). All labels respect the naming standart of **ISO 3166-1 alpha-2**.
+Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany** (DE) and **Czech Republic** (CZ), followed up by **Slovenia** (SI), **Portugal** (PT) and **Andorra** (AD). All labels respect the naming standart of [**ISO 3166-1 alpha-2**](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
 
+## Understanding predictions and labels
+> [!IMPORTANT]
+> When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer model](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
 
+To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
++ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BH), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are probably <ins>*invalid*</ins> and serve no meaning due to lack of images' informative features.
++ <ins>**Common attractors:**</ins>
+  - **Taiwan** (TW) and **South Korea** (KR) labels represent features of developed mostly Asian countries, although certain European or American landscapes can fit into this space as well. More often than not represents large urban centres of China, India, Japan, Australia, USA and Russia.
+  - **Czech Republic** (CZ) label represents features of mostly post-soviet countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents rural or small urban centres of Russia, Ukraine, Belarus, Poland, Estonia, Latvia and Lithuania.
+  - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark and Iceland.
