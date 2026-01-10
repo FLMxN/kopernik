@@ -166,7 +166,7 @@ Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany
 > When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer model](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
 
 To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
-+ <ins>**Null point attractors:**</ins> **Poland** (PL), **New Zealand** (NZ), **Bhutan** (BH), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
++ <ins>**Null point attractors:**</ins> **Poland** (PL), **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
   
 + <ins>**Common attractors:**</ins>
   - **Taiwan** (TW) and **South Korea** (KR) labels represent features of developed mostly Asian countries, although certain European or American landscapes can fit into this space as well. More often than not represents large urban centres of China, India, Japan, Australia, USA and Russia.
