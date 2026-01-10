@@ -21,13 +21,14 @@ from dotenv import load_dotenv
 #         imgs.append(example["image"])
 
 
-# ------------------------------------------------------------- CONFIG ------------
-IMGS = ["pics/t1.png"]
+# ------------------------------------------------------------- CONFIG -------------------------------------------------------
+IMGS = ["pics/image.png"]
 # IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/ryazan21080-371224838.jpg", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IS_PRETTY = False
-# ---------------------------------------------------------------------------------
+# ----------------------------------------------------------------------------------------------------------------------------
+
 load_dotenv()
 np.random.seed(42)
 torch.manual_seed(42)
