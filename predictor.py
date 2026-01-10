@@ -1,12 +1,11 @@
 import torch
-from PIL import Image
 import torch.nn.functional as F
 from torchvision import transforms
-from numpy import mean
 
+# -------------------------------------------------------- CONFIG ----------------------------------------------------------
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+# --------------------------------------------------------------------------------------------------------------------------
 preprocess = transforms.Compose([
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.485, 0.456, 0.406],
