@@ -53,6 +53,7 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
 + <ins>**Common attractors:**</ins>
   - **Taiwan** (TW) and **South Korea** (KR) labels represent features of developed mostly Asian countries, although certain European or American landscapes can fit into this space as well. More often than not represents large urban centres of China, India, Japan, Australia, USA and Russia.
   - **Czech Republic** (CZ) label represents features of mostly post-soviet countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents rural or small urban centres of Russia, Ukraine, Belarus, Poland, Estonia, Latvia and Lithuania.
+  - **Greece** (GR) label represents features of mostly Balkan countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents small urban centres of Russia, Ukraine, Belarus, Serbia, Hungary and Bulgaria.
   - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark, Iceland and Russia.
   - **Spain** (ES) label represents features of mostly European countries, although certain American landscapes can fit into this space as well. More often than not represents urban centres of France, Spain, Portugal and Italy.
 
