@@ -219,7 +219,7 @@ if __name__ == "__main__":
     if not IS_PRETTY:
         print("Using device:", device)
 
-    ckpt_path = "E://resnet50_streetview_imagenet1k.pth"
+    ckpt_path = os.getenv("CKPT")
     model, ckpt = load_model_checkpoint(ckpt_path, device=device, num_classes=56)
     sample_imgs = []
 
