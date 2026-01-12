@@ -12,6 +12,21 @@ preprocess = transforms.Compose([
                          std=[0.229, 0.224, 0.225])
 ])
 
+iso_alpha2_to_country = {
+    "AD": "Andorra", "AE": "United Arab Emirates", "AR": "Argentina", "AU": "Australia",
+    "BD": "Bangladesh", "BE": "Belgium", "BG": "Bulgaria", "BR": "Brazil", "BT": "Bhutan",
+    "BW": "Botswana", "CA": "Canada", "CH": "Switzerland", "CL": "Chile", "CO": "Colombia",
+    "CZ": "Czech Republic", "DE": "Germany", "DK": "Denmark", "EE": "Estonia", "ES": "Spain",
+    "FI": "Finland", "FR": "France", "GB": "United Kingdom", "GR": "Greece", "HK": "Hong Kong",
+    "HR": "Croatia", "HU": "Hungary", "ID": "Indonesia", "IE": "Ireland", "IL": "Israel",
+    "IS": "Iceland", "IT": "Italy", "JP": "Japan", "KH": "Cambodia", "KR": "Republic of Korea",
+    "LT": "Lithuania", "LV": "Latvia", "MX": "Mexico", "MY": "Malaysia", "NL": "Netherlands",
+    "NO": "Norway", "NZ": "New Zealand", "PE": "Peru", "PL": "Poland", "PT": "Portugal",
+    "RO": "Romania", "RU": "Russian Federation", "SE": "Sweden", "SG": "Singapore",
+    "SI": "Slovenia", "SK": "Slovakia", "SZ": "Eswatini", "TH": "Thailand", "TW": "Taiwan",
+    "UA": "Ukraine", "US": "United States", "ZA": "South Africa", "UNDEFINED": "Undefined"
+}
+
 def predict_image(model, samples, top_k=5, device=DEVICE, IS_PRETTY=False):
 
     if IS_PRETTY:
@@ -116,17 +131,11 @@ def predict_image(model, samples, top_k=5, device=DEVICE, IS_PRETTY=False):
         reg_top_indices = reg_top_indices.cpu().numpy()[0]
 
         for i, (prob, idx) in enumerate(zip(top_probs, top_indices)):
-            try:
-                label = model.config.id2label[idx]
-            except:
-                label = model.id2label[idx]
+            label = model.id2label[idx]             
             state_score[label] = state_score[label] + prob*100/len(samples)
 
         for i, (prob, idx) in enumerate(zip(reg_top_probs, reg_top_indices)):
-            try:
-                label = model.config.id2label[idx]
-            except:
-                label = model.id2label[idx]
+            label = model.id2label[idx]
 
             match label:
                 case country if country in regions["Europe"]:
@@ -151,7 +160,7 @@ def predict_image(model, samples, top_k=5, device=DEVICE, IS_PRETTY=False):
                 state_score[i] = 0
 
     preds = dict(sorted(
-    ((k, float(v)) for k, v in state_score.items() if v != 0),
+    ((iso_alpha2_to_country[k], float(v)) for k, v in state_score.items() if v != 0),
     key=lambda x: x[1],
     reverse=True))
 

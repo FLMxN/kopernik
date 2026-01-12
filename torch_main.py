@@ -22,11 +22,11 @@ from dotenv import load_dotenv
 
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-IMGS = ["pics/image.png"]
+IMGS = ["pics/image.jpg"]
 # IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/ryazan21080-371224838.jpg", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-IS_PRETTY = False
+IS_PRETTY = True
 # ----------------------------------------------------------------------------------------------------------------------------
 
 load_dotenv()
@@ -53,21 +53,6 @@ id2label_map = {
     52: "RU", 40: "SE", 19: "SG", 55: "SI", 8: "SK",
     11: "SZ", 18: "TH", 33: "TW", 39: "UA", 54: "US",
     20: "ZA"
-}
-
-iso_alpha2_to_country = {
-    "AD": "Andorra", "AE": "United Arab Emirates", "AR": "Argentina", "AU": "Australia",
-    "BD": "Bangladesh", "BE": "Belgium", "BG": "Bulgaria", "BR": "Brazil", "BT": "Bhutan",
-    "BW": "Botswana", "CA": "Canada", "CH": "Switzerland", "CL": "Chile", "CO": "Colombia",
-    "CZ": "Czech Republic", "DE": "Germany", "DK": "Denmark", "EE": "Estonia", "ES": "Spain",
-    "FI": "Finland", "FR": "France", "GB": "United Kingdom", "GR": "Greece", "HK": "Hong Kong",
-    "HR": "Croatia", "HU": "Hungary", "ID": "Indonesia", "IE": "Ireland", "IL": "Israel",
-    "IS": "Iceland", "IT": "Italy", "JP": "Japan", "KH": "Cambodia", "KR": "Republic of Korea",
-    "LT": "Lithuania", "LV": "Latvia", "MX": "Mexico", "MY": "Malaysia", "NL": "Netherlands",
-    "NO": "Norway", "NZ": "New Zealand", "PE": "Peru", "PL": "Poland", "PT": "Portugal",
-    "RO": "Romania", "RU": "Russian Federation", "SE": "Sweden", "SG": "Singapore",
-    "SI": "Slovenia", "SK": "Slovakia", "SZ": "Eswatini", "TH": "Thailand", "TW": "Taiwan",
-    "UA": "Ukraine", "US": "United States", "ZA": "South Africa"
 }
 
 def crop_resize(image: Image.Image, size = (HEIGHT, HEIGHT)) -> Image.Image:
