@@ -131,13 +131,13 @@ Features of [t2.png](pics/t2.png) seem to mostly represent features of the Europ
 
 ```
 Particular predictions:
-    DE: 49.78
-    CZ: 31.73
-    SI: 9.20
-    PT: 5.97
-    AD: 1.93
+    Germany (DE): 49.78
+    Czech Republic (CZ): 31.73
+    Slovenia (SI): 9.20
+    Portugal (PT): 5.97
+    Andorra (AD): 1.93
 ```
-Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany** (DE) and **Czech Republic** (CZ), followed up by **Slovenia** (SI), **Portugal** (PT) and **Andorra** (AD). All labels respect the naming standart of [**ISO 3166-1 alpha-2**](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
+Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany** and **Czech Republic**, followed up by **Slovenia**, **Portugal** and **Andorra**. All additional parenthesis labels respect the naming standart of [**ISO 3166-1 alpha-2**](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
 
 ## Feature visualising
 > [!NOTE]
