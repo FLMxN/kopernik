@@ -160,7 +160,7 @@ def predict_image(model, samples, top_k=5, device=DEVICE, IS_PRETTY=False):
                 state_score[i] = 0
 
     preds = dict(sorted(
-    ((iso_alpha2_to_country[k], float(v)) for k, v in state_score.items() if v != 0),
+    ((f"{iso_alpha2_to_country[k]} ({k})", float(v)) for k, v in state_score.items() if v != 0),
     key=lambda x: x[1],
     reverse=True))
 
