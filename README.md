@@ -62,6 +62,7 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Mexico** (MX) label may represent features of rural or small urban centres of South America.
   - **Romania** (RO) label may represent features of highways or other kind of purely road images.
   - **Canada** (CA) label may represent features of neighbourhoods in USA.
+  - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
 
 ## Inference
 ### Startup
