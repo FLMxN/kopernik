@@ -293,7 +293,7 @@ if __name__ == "__main__":
                     'learning_rate': LR,
                     'region_loss_weight': REGION_LOSS_WEIGHT,
                 }
-            }, "resnet50_streetview_imagenet1k.pth")
+            }, "resnet50_streetview_imagenet1k_regional.pth")
             print(f"   💾 Saved BEST model with val_acc: {val_acc:.4f}")
         else:
             patience_counter += 1
