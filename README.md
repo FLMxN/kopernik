@@ -53,6 +53,7 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
 + <ins>**Common attractors:**</ins>
   - **Taiwan** (TW) and **South Korea** (KR) labels represent features of developed mostly Asian countries, although certain European or American landscapes can fit into this space as well. More often than not represents large urban centres of China, India, Japan, Australia, USA and Russia.
   - **Czech Republic** (CZ) label represents features of mostly post-soviet countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents rural or small urban centres of Russia, Ukraine, Belarus, Poland, Estonia, Latvia and Lithuania.
+  - **Greece** (GR) label represents features of mostly Balkan countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents small urban centres of Russia, Ukraine, Belarus, Serbia, Hungary and Bulgaria.
   - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark, Iceland and Russia.
   - **Spain** (ES) label represents features of mostly European countries, although certain American landscapes can fit into this space as well. More often than not represents urban centres of France, Spain, Portugal and Italy.
 
@@ -130,13 +131,13 @@ Features of [t2.png](pics/t2.png) seem to mostly represent features of the Europ
 
 ```
 Particular predictions:
-    DE: 49.78
-    CZ: 31.73
-    SI: 9.20
-    PT: 5.97
-    AD: 1.93
+    Germany (DE): 49.78
+    Czech Republic (CZ): 31.73
+    Slovenia (SI): 9.20
+    Portugal (PT): 5.97
+    Andorra (AD): 1.93
 ```
-Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany** (DE) and **Czech Republic** (CZ), followed up by **Slovenia** (SI), **Portugal** (PT) and **Andorra** (AD). All labels respect the naming standart of [**ISO 3166-1 alpha-2**](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
+Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany** and **Czech Republic**, followed up by **Slovenia**, **Portugal** and **Andorra**. All additional parenthesis labels respect the naming standart of [**ISO 3166-1 alpha-2**](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
 
 ## Feature visualising
 > [!NOTE]
