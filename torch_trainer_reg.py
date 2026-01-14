@@ -61,9 +61,9 @@ class ResNet50Region(nn.Module):
     
     def forward(self, x):
         features = self.resnet(x)
-        country_logits = self.region_head(features)
+        region_logits = self.region_head(features)
         
-        return country_logits
+        return region_logits
 
 if __name__ == "__main__":
     # ---------------- CONFIG ----------------
@@ -77,7 +77,7 @@ if __name__ == "__main__":
     DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     NUM_WORKERS = 4
     
-    COUNTRY_LOSS_WEIGHT = 1
+    REGION_LOSS_WEIGHT = 1
     
     FP16 = True
     
@@ -116,7 +116,7 @@ if __name__ == "__main__":
     num_labels = len(labels)
     
     print(f"\n📊 Dataset statistics:")
-    print(f"   Total countries: {num_labels}")
+    print(f"   Total regions: {num_labels}")
     print(f"   Total samples: {len(full_dataset):,}")
     print(f"   Training samples: {len(train_hf):,}")
     print(f"   Validation samples: {len(val_hf):,}")
@@ -183,8 +183,7 @@ if __name__ == "__main__":
     print(f"   Trainable parameters: {trainable_params:,}")
     
     # ---------------- LOSSES & OPTIMIZER ----------------
-    criterion_country = nn.CrossEntropyLoss()
-    criterion_coord = nn.MSELoss()
+    criterion_region = nn.CrossEntropyLoss()
     
     # Use AdamW with weight decay
     optimizer = optim.AdamW(
@@ -212,14 +211,12 @@ if __name__ == "__main__":
     for epoch in range(NUM_EPOCHS):
         # Training
         model.train()
-        train_country_loss = 0.0
-        train_coord_loss = 0.0
-        train_total_loss = 0.0
+        train_region_loss = 0.0
         
         optimizer.zero_grad()
         
         pbar = tqdm(train_loader, desc=f'Epoch {epoch+1}/{NUM_EPOCHS}')
-        for batch_idx, (imgs, region_labels, coords) in enumerate(pbar):
+        for batch_idx, (imgs, region_labels) in enumerate(pbar):
             imgs = imgs.to(DEVICE, non_blocking=True)
             region_labels = region_labels.to(DEVICE, non_blocking=True)
             
@@ -228,10 +225,10 @@ if __name__ == "__main__":
                 region_logits = model(imgs)
                 
                 # Compute losses
-                loss_region = criterion_country(region_logits, region_labels)
+                loss_region = criterion_region(region_logits, region_labels)
                 
                 # Combined loss
-                loss = (COUNTRY_LOSS_WEIGHT * loss_region) / GRADIENT_ACCUMULATION_STEPS
+                loss = (REGION_LOSS_WEIGHT * loss_region) / GRADIENT_ACCUMULATION_STEPS
             
             # Backward pass with gradient accumulation
             scaler.scale(loss).backward()
@@ -245,8 +242,7 @@ if __name__ == "__main__":
                 optimizer.zero_grad()
             
             # Track losses
-            train_total_loss += loss_region.item() * GRADIENT_ACCUMULATION_STEPS
-            
+            train_region_loss += loss_region.item() * GRADIENT_ACCUMULATION_STEPS
             
             # Update progress bar
             pbar.set_postfix({
@@ -258,10 +254,11 @@ if __name__ == "__main__":
         
         # Validation
         model.eval()
+        val_total_correct = 0
         val_total = 0
         
         with torch.no_grad():
-            for imgs, region_labels, coords in val_loader:
+            for imgs, region_labels in val_loader:
                 imgs = imgs.to(DEVICE, non_blocking=True)
                 region_labels = region_labels.to(DEVICE, non_blocking=True)
                 
@@ -271,12 +268,11 @@ if __name__ == "__main__":
                 val_total_correct += (predicted == region_labels).sum().item()
                 val_total += region_labels.size(0)
         
-        train_total_loss_avg = train_total_loss / len(train_loader)        
+        train_region_loss_avg = train_region_loss / len(train_loader)
         val_acc = val_total_correct / val_total
         
         print(f"\n📊 Epoch {epoch+1}/{NUM_EPOCHS}:")
-        print(f"   Train - Region Loss: {train_total_loss_avg:.4f}, "
-              f"Total Loss: {train_total_loss_avg:.4f}")
+        print(f"   Train - Region Loss: {train_region_loss_avg:.4f}")
         print(f"   Val - Accuracy: {val_acc:.4f}")
         print(f"   Learning rate: {optimizer.param_groups[0]['lr']:.2e}")
         
@@ -295,7 +291,7 @@ if __name__ == "__main__":
                 'config': {
                     'batch_size': BATCH_SIZE,
                     'learning_rate': LR,
-                    'country_loss_weight': COUNTRY_LOSS_WEIGHT,
+                    'region_loss_weight': REGION_LOSS_WEIGHT,
                 }
             }, "resnet50_streetview_imagenet1k.pth")
             print(f"   💾 Saved BEST model with val_acc: {val_acc:.4f}")
