@@ -19,8 +19,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-### Dataset
-Dataset used for training the [developer model](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class). Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
+### Architecture
+Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training the [developer model](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class). Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
 
 **Credits**: [stochastic](https://huggingface.co/stochastic) (Winson Truong)
 
