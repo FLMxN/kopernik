@@ -27,8 +27,17 @@ iso_alpha2_to_country = {
     "UA": "Ukraine", "US": "United States", "ZA": "South Africa", "UNDEFINED": "Undefined"
 }
 
-def predict_image(model, samples, top_k=5, device=DEVICE, IS_PRETTY=False):
+reg_to_name = {
+    "east_asia": "Indochine and East Asia", 
+    "nordic": "Scandinavia and Northern Europe",
+    "post_socialist": "Balkans and Eastern Europe",
+    "anglosphere": "Anglosphere and Central Europe", 
+    "mediterranean": "Mediterranean and South Europe",
+    "tropical": "Latin America and South Asia",
+    "arid_african": "Resorts and Undefined Nature"
+}
 
+def predict_country(model, samples, top_k=5, device=DEVICE, IS_PRETTY=False):
     if IS_PRETTY:
         state_score = {
         "AD":0, "AE":0, "AR":0, "AU":0,
@@ -166,16 +175,57 @@ def predict_image(model, samples, top_k=5, device=DEVICE, IS_PRETTY=False):
 
     # print(f"\nCoordinates: {mean(longitudes)}, {mean(latitudes)}") #fuck this shit
 
-    print(f"\nRegional predictions:")
-    if IS_PRETTY:
-        print(f"    Undefined: {unk_score*100/len(samples):.2f}")
-    print(f"    Europe: {eu_score*100/len(samples):.2f}")
-    print(f"    Asia: {asia_score*100/len(samples):.2f}")
-    print(f"    North America: {na_score*100/len(samples):.2f}")
-    print(f"    South America: {sa_score*100/len(samples):.2f}")
-    print(f"    Oceania: {ocean_score*100/len(samples):.2f}")
-    print(f"    Africa: {africa_score*100/len(samples):.2f}")
+    if not IS_PRETTY:
+        print(f"\nContinental predictions:")
+        print(f"    Europe: {eu_score*100/len(samples):.2f}")
+        print(f"    Asia: {asia_score*100/len(samples):.2f}")
+        print(f"    North America: {na_score*100/len(samples):.2f}")
+        print(f"    South America: {sa_score*100/len(samples):.2f}")
+        print(f"    Oceania: {ocean_score*100/len(samples):.2f}")
+        print(f"    Africa: {africa_score*100/len(samples):.2f}")
 
     print(f"\nParticular predictions:")
+    for y in preds:
+        print(f"    {y}: {preds[y]:.2f}")
+
+def predict_region(model, samples, top_k=3, device=DEVICE, IS_PRETTY=False):
+    regions = {"east_asia":0, "nordic":0, "post_socialist":0, "anglosphere":0, "mediterranean":0, "tropical":0, "arid_african":0}
+    for x in enumerate(samples, 0):
+        resized_img = samples[x[0]]
+        inputs = preprocess(resized_img).unsqueeze(0)
+        inputs = inputs.to(device)
+
+        with torch.no_grad():
+            try:
+                outputs = model(**inputs)
+            except:
+                outputs = model(inputs)
+        
+        if isinstance(outputs, dict):
+            logits = outputs.get('logits', outputs.get('classification_logits'))
+        elif isinstance(outputs, tuple):
+            logits = outputs[0]
+        else:
+            logits = outputs
+        
+        if not IS_PRETTY:
+            print(f"\n{x} is loaded")
+        
+        probabilities = torch.nn.functional.softmax(logits, dim=-1)
+
+        top_probs, top_indices = torch.topk(probabilities, top_k)
+        top_probs = top_probs.cpu().numpy()[0]
+        top_indices = top_indices.cpu().numpy()[0]
+
+        for i, (prob, idx) in enumerate(zip(top_probs, top_indices)):
+            label = model.id2label[idx]
+            regions[label] = regions[label] + prob*100/len(samples)             
+
+        preds = dict(sorted(
+    ((reg_to_name[k], float(v)) for k, v in regions.items() if v != 0),
+    key=lambda x: x[1],
+    reverse=True))
+        
+    print(f"\nRegional predictions:")
     for y in preds:
         print(f"    {y}: {preds[y]:.2f}")

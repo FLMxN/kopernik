@@ -5,7 +5,7 @@ import torch
 from torch import nn
 from torchvision import transforms, models
 from PIL import Image
-from predictor import predict_image
+from predictor import predict_country, predict_region
 from datasets import load_dataset
 import sys
 from dotenv import load_dotenv
@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-IMGS = ["pics/image.jpg"]
+IMGS = ["pics/o8w6xmq7qlmzdhcte12m.jpg"]
 # IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/ryazan21080-371224838.jpg", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -55,6 +55,10 @@ id2label_map = {
     20: "ZA"
 }
 
+id2label_map_reg = {
+    0: "anglosphere", 1: "tropical", 2: "arid_african", 3: "mediterranean", 4: "post_socialist", 5: "nordic", 6: "east_asia"
+}
+
 def crop_resize(image: Image.Image, size = (HEIGHT, HEIGHT)) -> Image.Image:
     w, h = image.size
     new_h = HEIGHT
@@ -81,7 +85,7 @@ def clean_state_dict_keys(state_dict: dict) -> dict:
         new_sd[new_key] = v
     return new_sd
 
-class ResNet50FeatureExtractor(nn.Module):
+class ResNet50Country(nn.Module):
     def __init__(self, num_classes):
         super().__init__()
         self.resnet = models.resnet50(weights=None)
@@ -96,14 +100,30 @@ class ResNet50FeatureExtractor(nn.Module):
         country_logits = self.country_head(features)
         coordinates = self.coordinate_head(features)
         return country_logits, coordinates
+    
+class ResNet50Region(nn.Module):
+    def __init__(self, num_classes):
+        super().__init__()
+        self.resnet = models.resnet50(weights=None)
+        in_features = self.resnet.fc.in_features
+        self.resnet.fc = nn.Identity()
+        self.id2label = id2label_map_reg
+        self.region_head = nn.Linear(in_features, num_classes)
+    
+    def forward(self, x):
+        features = self.resnet(x)
+        region_logits = self.region_head(features)
+        return region_logits
 
-def load_model_checkpoint(path: str, device: torch.device, num_classes=56):
-    model = ResNet50FeatureExtractor(num_classes=num_classes)
+def load_model_checkpoint(is_reg, path: str, device: torch.device, num_classes=56):
+    if is_reg:
+        model = ResNet50Region(num_classes=num_classes)
+    else:
+        model = ResNet50Country(num_classes=num_classes)
     
     if not Path(path).exists():
         raise FileNotFoundError(f"Checkpoint not found: {path}")
 
-    # Load checkpoint
     checkpoint = torch.load(path, map_location="cpu")
     
     if not IS_PRETTY:
@@ -159,7 +179,7 @@ def load_model_checkpoint(path: str, device: torch.device, num_classes=56):
     # Load the weights
     try:
         model.load_state_dict(state_dict, strict=True)
-        print("✅ Checkpoint loaded successfully (strict mode)")
+        print(f"✅ Checkpoint loaded successfully ({'regional' if is_reg else 'country'})")
     except Exception as e:
         print(f"⚠️ Strict load failed: {e}")
         print("Trying non-strict load...")
@@ -219,8 +239,24 @@ if __name__ == "__main__":
     if not IS_PRETTY:
         print("Using device:", device)
 
-    ckpt_path = os.getenv("CKPT")
-    model, ckpt = load_model_checkpoint(ckpt_path, device=device, num_classes=56)
+    try:
+        ckpt_path = os.getenv("CKPT")
+        load_main = True
+    except:
+        print("⚠️ CKPT environment variable is not configured.")
+        load_main = False   
+    if load_main:
+        model, ckpt = load_model_checkpoint(path=ckpt_path, device=device, num_classes=56, is_reg=False)
+
+    try:
+        ckpt_reg_path = os.getenv("CKPT_REG")
+        load_reg = True
+    except:
+        print("⚠️ CKPT_REG environment variable is not configured.")
+        load_reg = False
+    if load_reg:
+        model_reg, ckpt_reg = load_model_checkpoint(path=ckpt_reg_path, device=device, num_classes=7, is_reg=True)
+
     sample_imgs = []
 
     for i in enumerate(IMGS, 0):
@@ -234,7 +270,9 @@ if __name__ == "__main__":
     # for i in enumerate(imgs, 0):
     #     img = resize(i[1]).convert("RGB")
     #     sample_imgs.append(img)
-
-    predict_image(samples=sample_imgs, model=model, IS_PRETTY=IS_PRETTY)
+    if load_main:
+        predict_country(samples=sample_imgs, model=model, IS_PRETTY=IS_PRETTY)
+    if load_reg:
+        predict_region(samples=sample_imgs, model=model_reg, IS_PRETTY=IS_PRETTY)
 
     # diagnose_model(model, ckpt)
