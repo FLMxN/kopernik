@@ -22,8 +22,8 @@ from dotenv import load_dotenv
 
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-IMGS = ["pics/o8w6xmq7qlmzdhcte12m.jpg"]
-# IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/ryazan21080-371224838.jpg", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
+# IMGS = ["pics/t4.png"]
+IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IS_PRETTY = True
@@ -35,7 +35,7 @@ torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
 
 try:
-    if sys.argv[1] == 'pretty':
+    if 'pretty' in sys.argv:
         IS_PRETTY = True
 except:
     pass
@@ -258,21 +258,33 @@ if __name__ == "__main__":
         model_reg, ckpt_reg = load_model_checkpoint(path=ckpt_reg_path, device=device, num_classes=7, is_reg=True)
 
     sample_imgs = []
+    sample_imgs_reg = []
 
     for i in enumerate(IMGS, 0):
         img_crop = crop_resize(Image.open(i[1]).convert("RGB"))
         img_stretch = stretch_resize(Image.open(i[1]).convert("RGB"))
-        sample_imgs.append(img_crop)
-        sample_imgs.append(img_stretch)
+        sample_imgs.append((img_crop, i[1]))
+        sample_imgs.append((img_stretch, i[1]))
+
+    for i in enumerate(IMGS, 0):
+        sample_imgs_reg.append((img_crop, f"output/{i[1].split('/')[1]}"))
+        sample_imgs_reg.append((img_stretch, f"output/{i[1].split('/')[1]}"))
+
         # img_stretch.show()
         # img_crop.show()
 
     # for i in enumerate(imgs, 0):
     #     img = resize(i[1]).convert("RGB")
     #     sample_imgs.append(img)
-    if load_main:
-        predict_country(samples=sample_imgs, model=model, IS_PRETTY=IS_PRETTY)
-    if load_reg:
-        predict_region(samples=sample_imgs, model=model_reg, IS_PRETTY=IS_PRETTY)
+    if load_main and load_reg:
+        # Both: country first (no pictures), then region (with pictures)
+        predict_country(samples=sample_imgs, model=model, IS_PRETTY=IS_PRETTY, show_pictures=False)
+        predict_region(samples=sample_imgs_reg, model=model_reg, IS_PRETTY=IS_PRETTY, show_pictures=True)
+    elif load_main:
+        # Only country (show pictures)
+        predict_country(samples=sample_imgs, model=model, IS_PRETTY=IS_PRETTY, show_pictures=True)
+    elif load_reg:
+        # Only region (show pictures)
+        predict_region(samples=sample_imgs, model=model_reg, IS_PRETTY=IS_PRETTY, show_pictures=True)
 
     # diagnose_model(model, ckpt)
