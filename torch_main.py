@@ -22,8 +22,9 @@ from dotenv import load_dotenv
 
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-# IMGS = ["pics/t4.png"]
-IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
+IMGS = ["pics/image.png"]
+# IMGS = ["pics/black-screen-4288342275.png"]
+# IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 IS_PRETTY = True
@@ -241,21 +242,20 @@ if __name__ == "__main__":
 
     try:
         ckpt_path = os.getenv("CKPT")
+        model, ckpt = load_model_checkpoint(path=ckpt_path, device=device, num_classes=56, is_reg=False)
         load_main = True
     except:
-        print("⚠️ CKPT environment variable is not configured.")
-        load_main = False   
-    if load_main:
-        model, ckpt = load_model_checkpoint(path=ckpt_path, device=device, num_classes=56, is_reg=False)
-
+        print("⚠️ CKPT environment variable is not configured or broken.")
+        load_main = False
+  
     try:
         ckpt_reg_path = os.getenv("CKPT_REG")
+        model_reg, ckpt_reg = load_model_checkpoint(path=ckpt_reg_path, device=device, num_classes=7, is_reg=True)
         load_reg = True
     except:
-        print("⚠️ CKPT_REG environment variable is not configured.")
+        print("⚠️ CKPT_REG environment variable is not configured or broken.")
         load_reg = False
-    if load_reg:
-        model_reg, ckpt_reg = load_model_checkpoint(path=ckpt_reg_path, device=device, num_classes=7, is_reg=True)
+        
 
     sample_imgs = []
     sample_imgs_reg = []

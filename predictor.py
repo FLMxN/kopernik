@@ -3,6 +3,7 @@ import torch
 import torch.nn.functional as F
 from torchvision import transforms
 import os
+from torch_gradcam import gradcam
 
 # -------------------------------------------------------- CONFIG ----------------------------------------------------------
 HEIGHT = 561
@@ -39,8 +40,43 @@ reg_to_name = {
     "arid_african": "Resorts and Undefined Nature"
 }
 
-def draw(data_dict, image_path, task, show_pictures):
-    img = Image.open(image_path)
+id2label_map = {
+    7: "AD", 16: "AE", 15: "AR", 43: "AU", 30: "BD",
+    26: "BE", 4: "BG", 46: "BR", 48: "BT", 31: "BW",
+    3: "CA", 49: "CH", 34: "CL", 17: "CO", 45: "CZ",
+    25: "DE", 36: "DK", 12: "EE", 41: "ES", 23: "FI",
+    28: "FR", 0: "GB", 53: "GR", 22: "HK", 24: "HR",
+    14: "HU", 42: "ID", 13: "IE", 51: "IL", 6: "IS",
+    27: "IT", 35: "JP", 10: "KH", 1: "KR", 32: "LT",
+    50: "LV", 29: "MX", 9: "MY", 2: "NL", 5: "NO",
+    37: "NZ", 44: "PE", 47: "PL", 21: "PT", 38: "RO",
+    52: "RU", 40: "SE", 19: "SG", 55: "SI", 8: "SK",
+    11: "SZ", 18: "TH", 33: "TW", 39: "UA", 54: "US",
+    20: "ZA"
+}
+
+id2label_map_reg = {
+    0: "anglosphere", 1: "tropical", 2: "arid_african", 3: "mediterranean", 4: "post_socialist", 5: "nordic", 6: "east_asia"
+}
+
+def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is_region, alpha):
+    class_idx = []
+    label2id = {i: l for l, i in id_map.items()}
+    if is_region:
+        for i in data_dict:
+            key = list(data_dict.keys())[0]
+            for label, name in reg_to_name.items():
+                if name == key:
+                    iso_code = label
+            class_idx.append(label2id[iso_code])
+    else:
+        for i in data_dict:
+            key = list(data_dict.keys())[0]
+            iso_code = key.split('(')[-1].rstrip(')')
+            class_idx.append(label2id[iso_code])
+    
+    gradcam(model, image_path, alpha=alpha, class_idx=class_idx, device=DEVICE, colormap=colormap)
+    img = Image.open(f"output/{image_path.split('/')[1]}")
     draw = ImageDraw.Draw(img)
     
     try:
@@ -51,9 +87,11 @@ def draw(data_dict, image_path, task, show_pictures):
         ]
         
         font = None
+        font_size = img.width // 64
+        line_height = img.height // 32
         for font_path in font_paths:
             if os.path.exists(font_path):
-                font = ImageFont.truetype(font_path, 24)
+                font = ImageFont.truetype(font_path, font_size)
                 break
         
         if font is None:
@@ -61,14 +99,13 @@ def draw(data_dict, image_path, task, show_pictures):
     except:
         font = ImageFont.load_default()
     
-    line_height = 32
     match task:
         case "region":
-            x, y = 30, 30
-            fill = (255, 0, 0)
+            x, y = img.width - 600, (line_height * (len(data_dict) - 1))
+            fill = (255, 92, 0)
         case "country":
-            x, y = img.width - 400, img.height - (line_height * (len(data_dict) + 1))
-            fill = (0, 255, 0)
+            x, y = img.width - 600, img.height - (line_height * (len(data_dict) + 1))
+            fill = (255, 255, 0)
 
     for key, value in data_dict.items():
         line = f"{key}: {value}"
@@ -200,7 +237,7 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
                     pass
 
         if x[0]%2 != 0:
-            draw(data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures)             
+            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='spring', id_map=id2label_map, is_region=False, alpha=0.42)             
 
         if not IS_PRETTY:
             for i, (prob, idx) in enumerate(zip(reg_top_probs, reg_top_indices)):
@@ -291,7 +328,7 @@ def predict_region(model, samples, show_pictures, top_k=3, device=DEVICE, IS_PRE
                 except:
                     pass
         if x[0]%2 != 0:
-            draw(data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures)             
+            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='plasma', id_map=id2label_map_reg, is_region=True, alpha=0.33)             
 
         preds = dict(sorted(
     ((reg_to_name[k], float(v)) for k, v in regions.items() if v != 0),
