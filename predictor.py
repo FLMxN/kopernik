@@ -75,8 +75,8 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
             iso_code = key.split('(')[-1].rstrip(')')
             class_idx.append(label2id[iso_code])
     
-    gradcam(model, image_path, alpha=alpha, class_idx=class_idx, device=DEVICE, colormap=colormap)
-    img = Image.open(f"output/{image_path.split('/')[1]}")
+    img = gradcam(model, image_path, alpha=alpha, class_idx=class_idx, device=DEVICE, colormap=colormap, task=('region' if is_region else 'country'))
+    # img = Image.open(f"pics/{image_path.split('/')[1]}")
     draw = ImageDraw.Draw(img)
     
     try:
@@ -99,25 +99,28 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
     except:
         font = ImageFont.load_default()
     
+    x, y = img.width - font_size*24, img.height - (line_height * (len(data_dict) + 1))
     match task:
         case "region":
-            x, y = img.width - 600, (line_height * (len(data_dict) - 1))
-            fill = (255, 92, 0)
-        case "country":
-            x, y = img.width - 600, img.height - (line_height * (len(data_dict) + 1))
             fill = (255, 255, 0)
+        case "country":
+            fill = (127, 255, 127)
 
     for key, value in data_dict.items():
         line = f"{key}: {value}"
         draw.text((x, y), line, fill=fill, font=font)       
         y += line_height
 
-    img.save(f"output/{image_path.split('/')[1]}")
+    img.save(f'output/{task}_{image_path.split("/")[1]}')
     if show_pictures:
-        try:
-            img.show()
-        except Exception as e:
-            print(f"Skipping display. Unable to show image: {e}")
+        img.show()
+
+    # img.save(f"output/{image_path.split('/')[1]}")
+    # if show_pictures:
+    #     try:
+    #         img.show()
+    #     except Exception as e:
+    #         print(f"Skipping display. Unable to show image: {e}")
 
 
 def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PRETTY=False):
@@ -237,7 +240,7 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
                     pass
 
         if x[0]%2 != 0:
-            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='spring', id_map=id2label_map, is_region=False, alpha=0.42)             
+            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='plasma', id_map=id2label_map, is_region=False, alpha=0.5)             
 
         if not IS_PRETTY:
             for i, (prob, idx) in enumerate(zip(reg_top_probs, reg_top_indices)):
@@ -328,7 +331,7 @@ def predict_region(model, samples, show_pictures, top_k=3, device=DEVICE, IS_PRE
                 except:
                     pass
         if x[0]%2 != 0:
-            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='plasma', id_map=id2label_map_reg, is_region=True, alpha=0.33)             
+            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='jet', id_map=id2label_map_reg, is_region=True, alpha=0.5)             
 
         preds = dict(sorted(
     ((reg_to_name[k], float(v)) for k, v in regions.items() if v != 0),

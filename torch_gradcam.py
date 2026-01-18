@@ -313,7 +313,7 @@ def apply_gradcam_multi(model, image_path, class_indices, device='cuda',
         return results
 
 
-def gradcam(model, image_path, class_idx, alpha, device, colormap):
+def gradcam(model, image_path, class_idx, alpha, device, colormap, task):
     # Convert single index to list if needed
     if isinstance(class_idx, int):
         class_indices = [class_idx]
@@ -323,11 +323,12 @@ def gradcam(model, image_path, class_idx, alpha, device, colormap):
     result = apply_gradcam_multi(model=model, image_path=image_path, class_indices=class_indices, alpha=alpha, device=device, colormap=colormap)
         
     # Save visualizations
-    result['visualization'].save(f'output/{image_path.split("/")[1]}')
+    # result['visualization'].save(f'output/{task}_{image_path.split("/")[1]}')
+    return result['visualization']
 
 if __name__ == "__main__":
     # Example usage
-    from torch_main import load_model_checkpoint, id2label_map
+    from torch_main import load_model_checkpoint
     import os
     from dotenv import load_dotenv
     
