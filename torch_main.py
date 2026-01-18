@@ -22,7 +22,7 @@ from dotenv import load_dotenv
 
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-IMGS = ["pics/t2.png"]
+IMGS = ["pics/image.png"]
 # IMGS = ["pics/black-screen-4288342275.png"]
 # IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
