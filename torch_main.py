@@ -22,12 +22,12 @@ from dotenv import load_dotenv
 
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-IMGS = ["pics/image.png"]
+IMGS = ["pics/us1.png"]
 # IMGS = ["pics/black-screen-4288342275.png"]
 # IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-IS_PRETTY = True
+IS_PRETTY = False
 # ----------------------------------------------------------------------------------------------------------------------------
 
 load_dotenv()
@@ -277,14 +277,11 @@ if __name__ == "__main__":
     #     img = resize(i[1]).convert("RGB")
     #     sample_imgs.append(img)
     if load_main and load_reg:
-        # Both: country first (no pictures), then region (with pictures)
         predict_country(samples=sample_imgs, model=model, IS_PRETTY=IS_PRETTY, show_pictures=True)
         predict_region(samples=sample_imgs, model=model_reg, IS_PRETTY=IS_PRETTY, show_pictures=True)
     elif load_main:
-        # Only country (show pictures)
         predict_country(samples=sample_imgs, model=model, IS_PRETTY=IS_PRETTY, show_pictures=True)
     elif load_reg:
-        # Only region (show pictures)
         predict_region(samples=sample_imgs, model=model_reg, IS_PRETTY=IS_PRETTY, show_pictures=True)
 
     # diagnose_model(model, ckpt)
