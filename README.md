@@ -28,7 +28,7 @@ Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingf
 ### Dependencies
 Kopernik mostly requires a standart package of machine learning and image processing libraries for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
 ```
-pip install torch torchvision scikit-learn datasets numpy tqdm pathlib dotenv
+pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv
 ```
 ### Model setup
 In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
