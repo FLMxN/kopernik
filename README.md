@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ### Architecture
-Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training the [developer model](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class). Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
+Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training both [developer models](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class). Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
 
 **Credits**: [stochastic](https://huggingface.co/stochastic) (Winson Truong)
 
@@ -31,7 +31,7 @@ Kopernik mostly requires a standart package of machine learning and image proces
 pip install torch torchvision scikit-learn datasets numpy tqdm pathlib dotenv
 ```
 ### Model setup
-In order to use pretrained fine-tuned model of the latest <ins>**developer versions**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
+In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
 
 Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py) for country model and [torch_trainer_reg.py](torch_trainer_reg.py) for regional model respectfully.
 
@@ -42,7 +42,7 @@ Before start, make sure to confugire the paths to your models in [.env](.env) fi
 > This section is constantly improving and getting new updates, based on tests and feedback.
 
 > [!IMPORTANT]
-> When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer model](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
+> When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer models](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
 
 To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
 + <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
@@ -64,7 +64,7 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Canada** (CA) label may represent features of neighbourhoods in USA.
   - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
   - **Andorra** (AD) label may represent features of noisy or undefined landscapes in Latin American countries.
-  - **Poland** (PL) label may represent features of recreational or resort 
+  - **Poland** (PL) label may represent features of southern recreational or resort locations.
 
 ## Inference
 ### Startup
@@ -81,6 +81,9 @@ python torch_main.py
 ### Pretty output digest
 > [!TIP]
 > Make sure to read [this](#understanding-predictions-and-labels) before getting into predictions provided below.
+
+![Utah, USA](pics/us1.png)
+> 1260 East 50 North, Springville, UT 84663, USA
 ```
 ✅ Extracted model_state_dict from checkpoint
 ✅ Checkpoint loaded successfully (country)
@@ -98,14 +101,16 @@ Particular predictions:
     Spain (ES): 0.01
     Romania (RO): 0.01
 ```
-Country model is confident and determined enough to assume **United States of America** (US) as a definitive prediction.
+![Country model output](output/country_us1.png)
+Country model is confident and determined enough to assume **United States of America** (US) as a definitive prediction. Gradient implies a **major** significance of <ins>**houses** and **trees** in the middle left of the image</ins>.
 ```
 Regional predictions:
     Anglosphere and Central Europe: 93.21
     Balkans and Eastern Europe: 6.79
     Latin America and South Asia: 0.00
 ```
-Regional model is confident and determined enough to assume **Anglosphere** as a definitive prediction.
+![Regional model output](output/region_us1.png)
+Regional model is confident and determined enough to assume **Anglosphere** as a definitive prediction. Gradient implies a **major significance** of a <ins>**house** in the middle left of the image</ins>, **mediocre** significance of a <ins>**house** in the middle right of the image</ins> and **mediocre** significance of a <ins>**hill valley** in the middle-left top of the image</ins>.
 
 ## Feature visualising
 > [!NOTE]
