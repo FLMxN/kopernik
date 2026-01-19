@@ -81,6 +81,9 @@ python torch_main.py
 ### Pretty output digest
 > [!TIP]
 > Make sure to read [this](#understanding-predictions-and-labels) before getting into predictions provided below.
+
+![Utah, USA](pics/us1.png)
+> 1260 East 50 North, Springville, UT 84663, USA
 ```
 ✅ Extracted model_state_dict from checkpoint
 ✅ Checkpoint loaded successfully (country)
@@ -98,14 +101,16 @@ Particular predictions:
     Spain (ES): 0.01
     Romania (RO): 0.01
 ```
-Country model is confident and determined enough to assume **United States of America** (US) as a definitive prediction.
+![Country model output](output/country_us1.png)
+Country model is confident and determined enough to assume **United States of America** (US) as a definitive prediction. Gradient implies a **major** significance of <ins>**houses** and **trees** in the middle left of the image</ins>.
 ```
 Regional predictions:
     Anglosphere and Central Europe: 93.21
     Balkans and Eastern Europe: 6.79
     Latin America and South Asia: 0.00
 ```
-Regional model is confident and determined enough to assume **Anglosphere** as a definitive prediction.
+![Regional model output](output/region_us1.png)
+Regional model is confident and determined enough to assume **Anglosphere** as a definitive prediction. Gradient implies a **major significance** of a <ins>**house** in the middle left of the image</ins>, **mediocre** significance of a <ins>**house** in the middle right of the image</ins> and **mediocre** significance of a <ins>**hill valley** in the middle-left top of the image</ins>.
 
 ## Feature visualising
 > [!NOTE]
