@@ -111,9 +111,3 @@ Regional predictions:
 ```
 ![Regional model output](output/region_us1.png)
 Regional model is confident and determined enough to assume **Anglosphere** as a definitive prediction. Gradient implies a **major significance** of a <ins>**house** in the middle left of the image</ins>, **mediocre** significance of a <ins>**house** in the middle right of the image</ins> and **mediocre** significance of a <ins>**hill valley** in the middle-left top of the image</ins>.
-
-## Feature visualising
-> [!NOTE]
-> This section is not complete and requires extension.
-
-For **debug** or **research purposes**, Kopernik is able to get a mean image of class features among all it's examples in the dataset. In order to do this, configure the [torch_visualizer.py](torch_visualizer.py) and run to get 2 images of chosen classes and **compare** them in % of similarity.
