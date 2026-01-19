@@ -58,7 +58,7 @@ IMGS = ["pics/us1.png"]
 > When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer models](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
 
 To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
-+ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
++ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features, such as excessive visual noise or, on the other hand, lack of telling details. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
 
 > [!TIP]
 > If you want to group <ins>**null point attractors**</ins> as **UNDEFINED** when listing predictions, check out [this](#startup)
