@@ -140,13 +140,13 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
         "UA":0, "US":0, "ZA":0, "UNDEFINED": 0
     }
         regions = {
-            "Europe": ["AD", "BE", "BG", "CH", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GR", "HR", "HU", "IE", "IS", "IT", "LT", "LV", "NL", "NO", "PT", "RO", "RU", "SE", "SI", "SK", "UA"],
+            "Europe": ["PL", "AD", "BE", "BG", "CH", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GB", "GR", "HR", "HU", "IE", "IS", "IT", "LT", "LV", "NL", "NO", "PT", "RO", "RU", "SE", "SI", "SK", "UA"],
             "Asia": ["AE", "BD", "HK", "ID", "IL", "JP", "KR", "MY", "SG", "TH", "TW"],
             "Oceania": ["AU"],
             "North America": ["CA", "MX", "US"],
             "South America": ["BR", "CL", "CO", "PE"],
             "Africa": ["BW", "ZA"],
-            "Undefined": ["SZ", "AR", "KH", "PL", "NZ", "BT"]
+            "Undefined": ["SZ", "AR", "KH", "NZ", "BT"]
         }
         unk_score = 0
     else:
