@@ -31,11 +31,11 @@ Kopernik mostly requires a standart package of machine learning and image proces
 pip install torch torchvision scikit-learn datasets numpy tqdm pathlib dotenv
 ```
 ### Model setup
-In order to use pretrained fine-tuned model of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview/blob/main/resnet50_streetview_imagenet1k.pth)
+In order to use pretrained fine-tuned model of the latest <ins>**developer versions**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
 
-Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py)
+Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py) for country model and [torch_trainer_reg.py](torch_trainer_reg.py) for regional model respectfully.
 
-Before start, make sure to confugire the path to your model in [.env](.env) file and sample pictures in the inference config at [torch_main.py](torch_main.py)
+Before start, make sure to confugire the paths to your models in [.env](.env) file and sample pictures in the inference config at [torch_main.py](torch_main.py)
 
 ## Understanding predictions and labels
 > [!NOTE]
@@ -45,7 +45,7 @@ Before start, make sure to confugire the path to your model in [.env](.env) file
 > When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer model](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
 
 To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
-+ <ins>**Null point attractors:**</ins> **Poland** (PL), **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
++ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
 
 > [!TIP]
 > If you want to group <ins>**null point attractors**</ins> as **UNDEFINED** when listing predictions, check out [this](#startup)
@@ -54,7 +54,7 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Taiwan** (TW) and **South Korea** (KR) labels represent features of developed mostly Asian countries, although certain European or American landscapes can fit into this space as well. More often than not represents large urban centres of China, India, Japan, Australia, USA and Russia.
   - **Czech Republic** (CZ) label represents features of mostly post-soviet countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents rural or small urban centres of Russia, Ukraine, Belarus, Poland, Estonia, Latvia and Lithuania.
   - **Greece** (GR) label represents features of mostly Balkan countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents small urban centres of Russia, Ukraine, Belarus, Serbia, Hungary and Bulgaria.
-  - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark, Iceland and Russia.
+  - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark, Iceland and Russia. In particular cases, may represent features of large urban centres of East Asia. 
   - **Spain** (ES) label represents features of mostly European countries, although certain American landscapes can fit into this space as well. More often than not represents urban centres of France, Spain, Portugal and Italy.
 
 + <ins>**Particular attractors:**</ins>
@@ -63,6 +63,8 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Romania** (RO) label may represent features of highways or other kind of purely road images.
   - **Canada** (CA) label may represent features of neighbourhoods in USA.
   - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
+  - **Andorra** (AD) label may represent features of noisy or undefined landscapes in Latin American countries.
+  - **Poland** (PL) label may represent features of recreational or resort 
 
 ## Inference
 ### Startup
@@ -71,74 +73,39 @@ If you completed [model setup](#model-setup) properly, inference requires no any
 python torch_main.py
 ```
 > [!TIP]
-> Default output mode is verbose. In order to hide debug logs and display more user-experience information, set **IS_PRETTY** in the inference config to <ins>*True*</ins> or pass additional argument when starting inference from shell:
+> Default output mode is pretty. In order to show debug logs and display more user-experience information, set **IS_PRETTY** in the inference config to <ins>*False*</ins> or pass additional argument when starting inference from shell:
 > ```
-> python torch_main.py pretty
+> python torch_main.py verbose
 > ``` 
 
-### Verbose output digest
+### Pretty output digest
 > [!TIP]
 > Make sure to read [this](#understanding-predictions-and-labels) before getting into predictions provided below.
 ```
-Using device: cuda
-Checkpoint structure:
-  epoch: int = 56
-  model_state_dict: dict with 322 keys
-  optimizer_state_dict: dict with 2 keys
-  val_acc: float = 0.47106690777576854
-  val_coord_loss: float = 0.06438215609107699
-  label_mapping: dict with 56 keys
-  config: dict with 4 keys
-```
-Debug data, optional. [Developer model](#model-setup) was trained through 56 epochs using CUDA and reached validation accuracy of 47% among 56 countries.
-
-```
 ✅ Extracted model_state_dict from checkpoint
-
-📋 State dict keys (first 10):
-  resnet.conv1.weight: shape torch.Size([64, 3, 7, 7])
-  resnet.bn1.weight: shape torch.Size([64])
-  resnet.bn1.bias: shape torch.Size([64])
-  resnet.bn1.running_mean: shape torch.Size([64])
-  resnet.bn1.running_var: shape torch.Size([64])
-  resnet.bn1.num_batches_tracked: shape torch.Size([])
-  resnet.layer1.0.conv1.weight: shape torch.Size([64, 64, 1, 1])
-  resnet.layer1.0.bn1.weight: shape torch.Size([64])
-  resnet.layer1.0.bn1.bias: shape torch.Size([64])
-  resnet.layer1.0.bn1.running_mean: shape torch.Size([64])
-
-✅ Multi-task checkpoint detected (both heads present)
-✅ Checkpoint loaded successfully (strict mode)
+✅ Checkpoint loaded successfully (country)
+✅ Extracted model_state_dict from checkpoint
+✅ Checkpoint loaded successfully (regional)
 ```
-Debug data, optional. [Developer model](#model-setup) successfully loaded with no compromise, displaying first 10 keys of own state dictionary.
-
-```
-(0, <PIL.Image.Image image mode=RGB size=988x561 at 0x2A2733D63C0>) is loaded
-
-(1, <PIL.Image.Image image mode=RGB size=997x561 at 0x2A27CA29FA0>) is loaded
-```
-[Developer model](#model-setup) has loaded and processed [t2.png](pics/t2.png) with 2 different scaling strategies (stretch and crop).
-
-```
-Regional predictions:
-    Europe: 98.67
-    Asia: 0.87
-    North America: 0.39
-    South America: 0.07
-    Oceania: 0.00
-    Africa: 0.00
-```
-Features of [t2.png](pics/t2.png) seem to mostly represent features of the European countries.
-
+Inference script successfully loaded and initialized both models: country and regional.
 ```
 Particular predictions:
-    Germany (DE): 49.78
-    Czech Republic (CZ): 31.73
-    Slovenia (SI): 9.20
-    Portugal (PT): 5.97
-    Andorra (AD): 1.93
+    United States (US): 99.41
+    Estonia (EE): 0.25
+    Slovenia (SI): 0.08
+    Germany (DE): 0.05
+    Chile (CL): 0.05
+    Spain (ES): 0.01
+    Romania (RO): 0.01
 ```
-Features of [t2.png](pics/t2.png) seem to mostly represent features of **Germany** and **Czech Republic**, followed up by **Slovenia**, **Portugal** and **Andorra**. All additional parenthesis labels respect the naming standart of [**ISO 3166-1 alpha-2**](https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2).
+Country model is confident and determined enough to assume **United States of America** (US) as a definitive prediction.
+```
+Regional predictions:
+    Anglosphere and Central Europe: 93.21
+    Balkans and Eastern Europe: 6.79
+    Latin America and South Asia: 0.00
+```
+Regional model is confident and determined enough to assume **Anglosphere** as a definitive prediction.
 
 ## Feature visualising
 > [!NOTE]
