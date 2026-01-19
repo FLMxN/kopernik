@@ -64,7 +64,7 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Canada** (CA) label may represent features of neighbourhoods in USA.
   - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
   - **Andorra** (AD) label may represent features of noisy or undefined landscapes in Latin American countries.
-  - **Poland** (PL) label may represent features of recreational or resort 
+  - **Poland** (PL) label may represent features of southern recreational or resort locations.
 
 ## Inference
 ### Startup
