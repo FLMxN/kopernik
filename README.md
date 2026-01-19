@@ -30,12 +30,25 @@ Kopernik mostly requires a standart package of machine learning and image proces
 ```
 pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv
 ```
-### Model setup
+### Setup
 In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
 
 Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py) for country model and [torch_trainer_reg.py](torch_trainer_reg.py) for regional model respectfully.
 
 Before start, make sure to confugire the paths to your models in [.env](.env) file and sample pictures in the inference config at [torch_main.py](torch_main.py)
+```
+CKPT = "E://resnet50_streetview_imagenet1k.pth" // country model
+CKPT_REG = "E://resnet50_streetview_imagenet1k_regional.pth" // regional model
+```
+>.env
+```
+...
+# ------------------------------------------------------------- CONFIG -------------------------------------------------------
+...
+IMGS = ["pics/us1.png"]
+...
+```
+>torch_main.py
 
 ## Understanding predictions and labels
 > [!NOTE]
