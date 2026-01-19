@@ -86,7 +86,7 @@ If you completed [model setup](#model-setup) properly, inference requires no any
 python torch_main.py
 ```
 > [!TIP]
-> Default output mode is pretty. In order to show debug logs and display more user-experience information, set **IS_PRETTY** in the inference config to <ins>*False*</ins> or pass additional argument when starting inference from shell:
+> Default output mode is pretty. In order to show debug logs and display more development information, set **IS_PRETTY** in the inference config to <ins>*False*</ins> or pass an additional argument when starting the inference from shell:
 > ```
 > python torch_main.py verbose
 > ``` 
