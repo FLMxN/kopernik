@@ -89,9 +89,9 @@ class GradCAM:
         
         # Weighted activation map
         cam = (weights * activations).sum(dim=1, keepdim=True)  # (1, 1, H, W)
-        cam = F.relu(cam)
+        # cam = F.relu(cam)
         
-        # Normalize to [0, 1]
+        # Normalize to [0, 1] (keeping all values including negatives)
         cam = cam.squeeze().cpu().numpy()
         cam_min = cam.min()
         cam_max = cam.max()

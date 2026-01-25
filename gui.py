@@ -6,6 +6,9 @@ import dotenv
 import os
 import webbrowser
 from pathlib import Path
+from PIL import ImageGrab, Image
+import io
+import time
 
 system = platform.system()
 dotenv_file = Path(__file__).parent / '.env'
@@ -14,7 +17,7 @@ dotenv.load_dotenv(dotenv_file, override=True)
 if 'done' not in st.session_state:
     st.session_state.done = False
 
-def render_done():
+def render_done(image_path):
         cnt, reg = st.columns(2)
         with cnt:
             st.image(image=f'output/country_{image_path[0].split("/")[1]}', caption=None, width="content", use_column_width=None, clamp=False, channels="RGB", output_format="auto", use_container_width=True)
@@ -68,12 +71,46 @@ with st.form(key="models", clear_on_submit=False, enter_to_submit=False, width=2
                     st.success("Model paths updated!")
 
 st.header("Do you know the 'image' guy?")
-image = st.file_uploader(label="Yeah, you do", type=["jpg", "jpeg", "png"], accept_multiple_files=False, max_upload_size=64)
+local, buffer = st.columns(2)
+with local:
+    image = st.file_uploader(label="Yeah, you do?", type=["jpg", "jpeg", "png"], accept_multiple_files=False, max_upload_size=64)
+    st.session_state.clip = False
+with buffer:
+      st.markdown("<p style='font-size: 14px;'>Or maybe business card?</p>", unsafe_allow_html=True)
+      image_name = None
+      if st.button("From Clipboard", use_container_width=True, icon="📋", icon_position="right"):
+        try:
+            clip_image = ImageGrab.grabclipboard()
+            if clip_image is None:
+                st.error("No image in clipboard!")
+            else:
+                buffer_data = io.BytesIO()
+                clip_image.save(buffer_data, format="PNG")
+                buffer_data.seek(0)
+
+                image_name = f"clipboard_{int(time.time())}.png"
+                image_path = [f"pics/{image_name}"]
+                
+                with open(image_path[0], "wb") as f:
+                    f.write(buffer_data.getvalue())
+                
+                image = Image.open(image_path[0])
+                st.success(f"Loaded from clipboard!")
+                st.session_state.clip = True
+        except Exception as e:
+            st.error(f"Failed to grab clipboard: {e}")
+
 if image is not None:
+    if image_name is None:
+        # File uploader path
+        image_path = [f"pics/{image.name}"]
+        with open(image_path[0], "wb") as f:
+            f.write(image.getbuffer())
+    else:
+        # Clipboard path
+        image_path = [f"pics/{image_name}"]
     run_stop = False
-    image_path = [f"pics/{image.name}"]
-    with open(image_path[0], "wb") as f:
-        f.write(image.getbuffer())
+    st.session_state.image_path = image_path
     dotenv.set_key(dotenv_file, "INPUT_IMG", image_path[0])
 else:
     run_stop = True
@@ -81,6 +118,7 @@ else:
 pretty_col, run_col = st.columns([1, 7])
 with run_col:
                 if st.button("Run", key="run_button", use_container_width=True, type="primary", icon="🎯", icon_position="right", disabled=run_stop):
+                    run_stop = True
                     dotenv_file = Path(__file__).parent / '.env'
                     dotenv.load_dotenv(dotenv_file)
                     env = os.environ.copy()
@@ -132,6 +170,7 @@ if st.session_state.done:
         dotenv.load_dotenv(dotenv_file)
         text_output = st.empty()
         text_output.code(output, language="shellSession", height=512, width=2048)
-        render_done()
+        if hasattr(st.session_state, 'image_path'):
+            render_done(st.session_state.image_path)
     except Exception as e:
         pass

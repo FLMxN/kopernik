@@ -17,3 +17,6 @@ dataset.py
 dataset_ref.py
 
 node_modules/
+
+output/*clipboard*
+pics/*clipboard*
