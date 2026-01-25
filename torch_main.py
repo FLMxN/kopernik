@@ -27,19 +27,23 @@ if sys.stdout.encoding != 'utf-8':
 #         print(i)
 #         imgs.append(example["image"])
 
-dotenv_file = dotenv.find_dotenv()
-dotenv.load_dotenv(dotenv_file)
+
+dotenv_file = Path(__file__).parent / '.env'
+dotenv.load_dotenv(dotenv_file, override=True)
+env = os.environ.copy()
+
 np.random.seed(42)
 torch.manual_seed(42)
 torch.cuda.manual_seed_all(42)
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-IMGS = [os.environ['INPUT_IMG']]
+IMGS = [env['INPUT_IMG']]
 # IMGS = ["pics/black-screen-4288342275.png"]
 # IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-IS_PRETTY = True if int(os.environ['PRETTY']) else False
+IS_PRETTY = True if os.environ['PRETTY']=="1" else False
+# IS_PRETTY = True
 # ----------------------------------------------------------------------------------------------------------------------------
 
 try:

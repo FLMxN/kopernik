@@ -5,17 +5,19 @@ import asyncio
 import dotenv
 import os
 import webbrowser
+from pathlib import Path
 
 system = platform.system()
-dotenv_file = dotenv.find_dotenv()
-dotenv.load_dotenv(dotenv_file)
-env = os.environ.copy()
+dotenv_file = Path(__file__).parent / '.env'
+dotenv.load_dotenv(dotenv_file, override=True)
 
 image_path = [""]
+dotenv.set_key(dotenv_file, "PRETTY", '1')
 if 'done' not in st.session_state:
     st.session_state.done = False
 
 def pretty():
+    st.session_state.done = False
     if st.session_state.pretty_toggle:
         dotenv.set_key(dotenv_file, "PRETTY", '1')
     else:
@@ -55,19 +57,19 @@ if st.button("Setup", use_container_width=True, icon="⚙️", icon_position="ri
                 output = ""
                 for line in process.stdout:
                     output += line
-                    placeholder.code(output, language="bash", height=256, width=1024)
+                    placeholder.code(output, language="bash", height=512, width=2048)
 
                 process.wait()
                 asyncio.run(asyncio.sleep(3))
                 placeholder.success("Setup complete!")
 
 st.header("Done? It's time to load your models")
-with st.form(key="models", clear_on_submit=False, enter_to_submit=False, width=1024):
+with st.form(key="models", clear_on_submit=False, enter_to_submit=False, width=2048):
                 country, region = st.columns(2)
                 with country:
-                    country_model = st.text_input("Country model path", os.environ['CKPT'], width=512)
+                    country_model = st.text_input("Country model path", os.environ['CKPT'], width=1024)
                 with region:
-                    regional_model = st.text_input("Regional model path", os.environ['CKPT_REG'], width=512)
+                    regional_model = st.text_input("Regional model path", os.environ['CKPT_REG'], width=1024)
 
                 if st.form_submit_button(key="models", label="Load models", use_container_width=True, icon="🚀", icon_position="right", help="If you don't need to use a certain model, just write anything in the corresponding field"):
                     dotenv.set_key(dotenv_file, "CKPT", country_model)
@@ -85,6 +87,10 @@ if image is not None:
 pretty_col, run_col = st.columns([1, 7])
 with run_col:
                 if st.button("Run", key="run_button", use_container_width=True, type="primary", icon="🎯", icon_position="right"):
+                    dotenv_file = Path(__file__).parent / '.env'
+                    dotenv.load_dotenv(dotenv_file)
+                    env = os.environ.copy()
+                    output = ""
                     placeholder = st.empty()
 
                     if system == "Windows":
@@ -95,7 +101,9 @@ with run_col:
                                 stderr=subprocess.STDOUT,
                                 text=True,
                                 bufsize=1,
-                                encoding="utf-8"
+                                encoding="utf-8",
+                                cwd=str(Path(__file__).parent),
+                                env=env
                             )
                     else:
                             env['PYTHONIOENCODING'] = 'utf-8'
@@ -105,20 +113,26 @@ with run_col:
                                 stderr=subprocess.STDOUT,
                                 text=True,
                                 bufsize=1,
-                                encoding="utf-8"
+                                encoding="utf-8",
+                                cwd=str(Path(__file__).parent),
+                                env=env
                             )
 
                     output = ""
                     for line in process.stdout:
                         output += line
                             
-
                     st.session_state.done = True
                     process.wait()
 with pretty_col:
-                st.toggle(label="Pretty", value=True, key="pretty_toggle", on_change=pretty, width=256)
+    st.toggle(label="Pretty", value=True, key="pretty_toggle", on_change=pretty, width=256)
 
 if st.session_state.done:
-    text_output = st.empty()
-    text_output.code(output, language="shellSession", height=512, width=2048)
-    render_done()
+    try:
+        dotenv_file = Path(__file__).parent / '.env'
+        dotenv.load_dotenv(dotenv_file)
+        text_output = st.empty()
+        text_output.code(output, language="shellSession", height=512, width=2048)
+        render_done()
+    except Exception as e:
+        pass
