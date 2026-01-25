@@ -4,6 +4,10 @@ import torch.nn.functional as F
 from torchvision import transforms
 import os
 from torch_gradcam import gradcam
+import dotenv
+
+dotenv_file = dotenv.find_dotenv()
+dotenv.load_dotenv(dotenv_file)
 
 # -------------------------------------------------------- CONFIG ----------------------------------------------------------
 HEIGHT = 561
@@ -112,8 +116,7 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
         y += line_height
 
     img.save(f'output/{task}_{image_path.split("/")[1]}')
-    if show_pictures:
-        img.show()
+    dotenv.set_key(dotenv_file, f"{task.upper()}_IMG", f'output/{task}_{image_path.split("/")[1]}')
 
     # img.save(f"output/{image_path.split('/')[1]}")
     # if show_pictures:

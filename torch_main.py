@@ -8,7 +8,14 @@ from PIL import Image
 from predictor import predict_country, predict_region
 from datasets import load_dataset
 import sys
-from dotenv import load_dotenv
+import dotenv
+import os
+import sys
+import io
+
+# Force UTF-8 encoding for stdout to handle emojis properly
+if sys.stdout.encoding != 'utf-8':
+    sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
 
 # full_dataset = load_dataset("stochastic/random_streetview_images_pano_v0.0.2", 
@@ -20,20 +27,20 @@ from dotenv import load_dotenv
 #         print(i)
 #         imgs.append(example["image"])
 
+dotenv_file = dotenv.find_dotenv()
+dotenv.load_dotenv(dotenv_file)
+np.random.seed(42)
+torch.manual_seed(42)
+torch.cuda.manual_seed_all(42)
 
 # ------------------------------------------------------------- CONFIG -------------------------------------------------------
-IMGS = ["pics/us1.png"]
+IMGS = [os.environ['INPUT_IMG']]
 # IMGS = ["pics/black-screen-4288342275.png"]
 # IMGS = ["pics/image.png", "pics/zahodryazan.jpg", "pics/ryazan-russia-city-view-3628679470.jpg", "pics/t1.png", "pics/t2.png", "pics/t3.png", "pics/t4.png", "pics/Ryazan-03.jpg", "pics/5df12e8f9e3d0-5140-sobornaja-ploschad.jpeg"]
 HEIGHT = 561
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-IS_PRETTY = True
+IS_PRETTY = True if int(os.environ['PRETTY']) else False
 # ----------------------------------------------------------------------------------------------------------------------------
-
-load_dotenv()
-np.random.seed(42)
-torch.manual_seed(42)
-torch.cuda.manual_seed_all(42)
 
 try:
     if 'verbose' in sys.argv:
