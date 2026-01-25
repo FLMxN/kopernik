@@ -28,14 +28,27 @@ Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingf
 ### Dependencies
 Kopernik mostly requires a standart package of machine learning and image processing libraries for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
 ```
-pip install torch torchvision scikit-learn datasets numpy tqdm pathlib dotenv
+pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv
 ```
-### Model setup
+### Setup
 In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
 
 Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py) for country model and [torch_trainer_reg.py](torch_trainer_reg.py) for regional model respectfully.
 
 Before start, make sure to confugire the paths to your models in [.env](.env) file and sample pictures in the inference config at [torch_main.py](torch_main.py)
+```
+CKPT = "E://resnet50_streetview_imagenet1k.pth" // country model
+CKPT_REG = "E://resnet50_streetview_imagenet1k_regional.pth" // regional model
+```
+>.env
+```
+...
+# --------------------------------------------------------- CONFIG -----------------------------------------------------
+...
+IMGS = ["pics/us1.png"]
+...
+```
+>torch_main.py
 
 ## Understanding predictions and labels
 > [!NOTE]
@@ -45,7 +58,7 @@ Before start, make sure to confugire the paths to your models in [.env](.env) fi
 > When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer models](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
 
 To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
-+ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
++ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features, such as excessive visual noise or, on the other hand, lack of telling details. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
 
 > [!TIP]
 > If you want to group <ins>**null point attractors**</ins> as **UNDEFINED** when listing predictions, check out [this](#startup)
@@ -73,7 +86,7 @@ If you completed [model setup](#model-setup) properly, inference requires no any
 python torch_main.py
 ```
 > [!TIP]
-> Default output mode is pretty. In order to show debug logs and display more user-experience information, set **IS_PRETTY** in the inference config to <ins>*False*</ins> or pass additional argument when starting inference from shell:
+> Default output mode is pretty. In order to show debug logs and display more development information, set **IS_PRETTY** in the inference config to <ins>*False*</ins> or pass an additional argument when starting the inference from shell:
 > ```
 > python torch_main.py verbose
 > ``` 
