@@ -11,17 +11,8 @@ system = platform.system()
 dotenv_file = Path(__file__).parent / '.env'
 dotenv.load_dotenv(dotenv_file, override=True)
 
-image_path = [""]
-dotenv.set_key(dotenv_file, "PRETTY", '1')
 if 'done' not in st.session_state:
     st.session_state.done = False
-
-def pretty():
-    st.session_state.done = False
-    if st.session_state.pretty_toggle:
-        dotenv.set_key(dotenv_file, "PRETTY", '1')
-    else:
-        dotenv.set_key(dotenv_file, "PRETTY", '0')
 
 def render_done():
         cnt, reg = st.columns(2)
@@ -79,14 +70,17 @@ with st.form(key="models", clear_on_submit=False, enter_to_submit=False, width=2
 st.header("Do you know the 'image' guy?")
 image = st.file_uploader(label="Yeah, you do", type=["jpg", "jpeg", "png"], accept_multiple_files=False, max_upload_size=64)
 if image is not None:
+    run_stop = False
     image_path = [f"pics/{image.name}"]
     with open(image_path[0], "wb") as f:
         f.write(image.getbuffer())
     dotenv.set_key(dotenv_file, "INPUT_IMG", image_path[0])
+else:
+    run_stop = True
 
 pretty_col, run_col = st.columns([1, 7])
 with run_col:
-                if st.button("Run", key="run_button", use_container_width=True, type="primary", icon="🎯", icon_position="right"):
+                if st.button("Run", key="run_button", use_container_width=True, type="primary", icon="🎯", icon_position="right", disabled=run_stop):
                     dotenv_file = Path(__file__).parent / '.env'
                     dotenv.load_dotenv(dotenv_file)
                     env = os.environ.copy()
@@ -125,7 +119,12 @@ with run_col:
                     st.session_state.done = True
                     process.wait()
 with pretty_col:
-    st.toggle(label="Pretty", value=True, key="pretty_toggle", on_change=pretty, width=256)
+    pretty = st.toggle(label="Pretty", value=True, key="pretty_toggle", width=256)
+    match pretty:
+        case True:
+            dotenv.set_key(dotenv_file, "PRETTY", "1")
+        case False:
+            dotenv.set_key(dotenv_file, "PRETTY", "0")
 
 if st.session_state.done:
     try:
