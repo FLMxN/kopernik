@@ -1,3 +1,4 @@
+from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 import torch
 import torch.nn.functional as F
@@ -6,8 +7,9 @@ import os
 from torch_gradcam import gradcam
 import dotenv
 
-dotenv_file = dotenv.find_dotenv()
-dotenv.load_dotenv(dotenv_file)
+dotenv_file = Path(__file__).parent / '.env'
+dotenv.load_dotenv(dotenv_file, override=True)
+env = os.environ.copy()
 
 # -------------------------------------------------------- CONFIG ----------------------------------------------------------
 HEIGHT = 561
@@ -115,8 +117,9 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
         draw.text((x, y), line, fill=fill, font=font)       
         y += line_height
 
-    img.save(f'output/{task}_{image_path.split("/")[1]}')
-    dotenv.set_key(dotenv_file, f"{task.upper()}_IMG", f'output/{task}_{image_path.split("/")[1]}')
+    output_filename = f'output/{task}_{image_path.split("/")[1]}'
+    img.save(output_filename)
+    dotenv.set_key(dotenv_file, f"{task.upper()}_IMG", output_filename)
 
     # img.save(f"output/{image_path.split('/')[1]}")
     # if show_pictures:
