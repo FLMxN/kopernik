@@ -26,9 +26,9 @@ Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingf
 
 ## Installation
 ### Dependencies
-Kopernik mostly requires a standart package of machine learning and image processing libraries for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
+Kopernik mostly requires a standart package of machine learning and image processing libraries (+ additional for GUI and UX) for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
 ```
-pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv
+pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv streamlit
 ```
 ### Setup
 In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
@@ -80,7 +80,7 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Poland** (PL) label may represent features of southern recreational or resort locations.
 
 ## Inference
-### Startup
+### CLI
 If you completed [model setup](#model-setup) properly, inference requires no any additional preparations.
 ```
 python torch_main.py
@@ -90,6 +90,17 @@ python torch_main.py
 > ```
 > python torch_main.py verbose
 > ``` 
+
+### GUI
+If CLI works, Streamlit GUI could be a great user experience for occasional use. To start Streamlit local server, use
+```
+python run.py
+```
+and open localhost:8501 in your browser or run a dedicated Electron application via 
+```
+npm start
+```
+and enjoy!
 
 ### Pretty output digest
 > [!TIP]
