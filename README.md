@@ -65,9 +65,8 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Spain** (ES) label represents features of mostly European countries, although certain American landscapes can fit into this space as well. More often than not represents urban centres of France, Spain, Portugal and Italy.
 
 + <ins>**Particular attractors:**</ins>
-  - **Botswana** (BW) label may represent features of rural or small urban centres of Japan.
-  - **Mexico** (MX) label may represent features of rural or small urban centres of South America.
-  - **Romania** (RO) label may represent features of highways or other kind of purely road images.
+  - **Romania** (RO), **Mexico** (MX) and **Ukraine** (UA) labels may represent features of wide areas with no particular subject (ex. highways) all over the world.
+  - **Botswana** (BW) label may represent features of any kind of landscapes in Japan. 
   - **Canada** (CA) label may represent features of neighbourhoods in USA.
   - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
   - **Andorra** (AD) label may represent features of noisy or undefined landscapes in Latin American countries.
