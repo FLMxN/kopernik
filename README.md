@@ -96,7 +96,7 @@ If CLI works, Streamlit GUI could be a great user experience for occasional use.
 ```
 python run.py
 ```
-and open localhost:8501 in your browser or run a dedicated Electron application via 
+and open **localhost:8501** in your browser or run a dedicated Electron application via 
 ```
 npm start
 ```
