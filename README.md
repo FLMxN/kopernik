@@ -1,4 +1,4 @@
-# Kopernik - geography-adjacent ResNet-based CNN by Google Street View data
+# Kopernik - geography-adjacent ResNet-based CNN trained Google Street View data
 ## Introduction
 **Kopernik** is an open-source machine learning project, focused on predicting geographic data based on landscape pictures inside or outside of urbanity.
 
