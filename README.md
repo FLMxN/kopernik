@@ -20,7 +20,8 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ### Architecture
-Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training both [developer models](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class). Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
+Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training both [developer models](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class).
+Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
 
 **Credits**: [stochastic](https://huggingface.co/stochastic) (Winson Truong)
 
@@ -39,7 +40,7 @@ Before start, make sure to confugire the paths to your models and the sample ima
 ```
 CKPT = "E://resnet50_streetview_imagenet1k.pth" // country model
 CKPT_REG = "E://resnet50_streetview_imagenet1k_regional.pth" // regional model
-INPUT_IMG = "pics/us1.png
+INPUT_IMG = "pics/us1.png"
 ```
 >.env
 
