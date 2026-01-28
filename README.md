@@ -35,20 +35,13 @@ In order to use pretrained fine-tuned models of the latest <ins>**developer vers
 
 Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py) for country model and [torch_trainer_reg.py](torch_trainer_reg.py) for regional model respectfully.
 
-Before start, make sure to confugire the paths to your models in [.env](.env) file and sample pictures in the inference config at [torch_main.py](torch_main.py)
+Before start, make sure to confugire the paths to your models and the sample image in [.env](.env) file.
 ```
 CKPT = "E://resnet50_streetview_imagenet1k.pth" // country model
 CKPT_REG = "E://resnet50_streetview_imagenet1k_regional.pth" // regional model
+INPUT_IMG = "pics/us1.png
 ```
 >.env
-```
-...
-# --------------------------------------------------------- CONFIG -----------------------------------------------------
-...
-IMGS = ["pics/us1.png"]
-...
-```
->torch_main.py
 
 ## Understanding predictions and labels
 > [!NOTE]
