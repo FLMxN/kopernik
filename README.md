@@ -1,4 +1,4 @@
-# Kopernik - geography-adjacent ResNet-based CNN by Google Street View data
+# Kopernik - geography-adjacent ResNet-based CNN trained Google Street View data
 ## Introduction
 **Kopernik** is an open-source machine learning project, focused on predicting geographic data based on landscape pictures inside or outside of urbanity.
 
@@ -20,35 +20,29 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ### Architecture
-Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training both [developer models](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class). Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
+Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training both [developer models](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class).
+Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
 
 **Credits**: [stochastic](https://huggingface.co/stochastic) (Winson Truong)
 
 ## Installation
 ### Dependencies
-Kopernik mostly requires a standart package of machine learning and image processing libraries for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
+Kopernik mostly requires a standart package of machine learning and image processing libraries (+ additional for GUI and UX) for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
 ```
-pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv
+pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv streamlit
 ```
 ### Setup
 In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
 
 Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py) for country model and [torch_trainer_reg.py](torch_trainer_reg.py) for regional model respectfully.
 
-Before start, make sure to confugire the paths to your models in [.env](.env) file and sample pictures in the inference config at [torch_main.py](torch_main.py)
+Before start, make sure to confugire the paths to your models and the sample image in [.env](.env) file.
 ```
 CKPT = "E://resnet50_streetview_imagenet1k.pth" // country model
 CKPT_REG = "E://resnet50_streetview_imagenet1k_regional.pth" // regional model
+INPUT_IMG = "pics/us1.png"
 ```
 >.env
-```
-...
-# --------------------------------------------------------- CONFIG -----------------------------------------------------
-...
-IMGS = ["pics/us1.png"]
-...
-```
->torch_main.py
 
 ## Understanding predictions and labels
 > [!NOTE]
@@ -71,16 +65,15 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
   - **Spain** (ES) label represents features of mostly European countries, although certain American landscapes can fit into this space as well. More often than not represents urban centres of France, Spain, Portugal and Italy.
 
 + <ins>**Particular attractors:**</ins>
-  - **Botswana** (BW) label may represent features of rural or small urban centres of Japan.
-  - **Mexico** (MX) label may represent features of rural or small urban centres of South America.
-  - **Romania** (RO) label may represent features of highways or other kind of purely road images.
+  - **Romania** (RO), **Mexico** (MX) and **Ukraine** (UA) labels may represent features of wide areas with no particular subject (ex. highways) all over the world.
+  - **Botswana** (BW) label may represent features of any kind of landscapes in Japan. 
   - **Canada** (CA) label may represent features of neighbourhoods in USA.
   - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
   - **Andorra** (AD) label may represent features of noisy or undefined landscapes in Latin American countries.
   - **Poland** (PL) label may represent features of southern recreational or resort locations.
 
 ## Inference
-### Startup
+### CLI
 If you completed [model setup](#model-setup) properly, inference requires no any additional preparations.
 ```
 python torch_main.py
@@ -90,6 +83,17 @@ python torch_main.py
 > ```
 > python torch_main.py verbose
 > ``` 
+
+### GUI
+If CLI works, Streamlit GUI could be a great user experience for occasional use. To start Streamlit local server, use
+```
+python run.py
+```
+and open **localhost:8501** in your browser or run a dedicated Electron application via 
+```
+npm start
+```
+and enjoy!
 
 ### Pretty output digest
 > [!TIP]
