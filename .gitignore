@@ -20,3 +20,9 @@ node_modules/
 
 output/*clipboard*
 pics/*clipboard*
+
+venv/
+build/
+dist/
+
+run.spec

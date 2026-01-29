@@ -326,22 +326,22 @@ def gradcam(model, image_path, class_idx, alpha, device, colormap, task):
     # result['visualization'].save(f'output/{task}_{image_path.split("/")[1]}')
     return result['visualization']
 
-if __name__ == "__main__":
-    # Example usage
-    from torch_main import load_model_checkpoint
-    import os
-    from dotenv import load_dotenv
+# if __name__ == "__main__":
+#     # Example usage
+#     from torch_main import load_model_checkpoint
+#     import os
+#     from dotenv import load_dotenv
     
-    load_dotenv()
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    ckpt_path = os.getenv("CKPT")
+#     load_dotenv()
+#     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+#     ckpt_path = os.getenv("CKPT")
     
-    # Load model
-    model, _ = load_model_checkpoint(False, ckpt_path, device=device, num_classes=56)
-    model.eval()
+#     # Load model
+#     model, _ = load_model_checkpoint(False, ckpt_path, device=device, num_classes=56)
+#     model.eval()
     
-    # Apply Grad-CAM to an image
-    image_path = "pics/image.png"
-    class_idx = [52, 35]  # Example: visualize for Russia and Japan
+#     # Apply Grad-CAM to an image
+#     image_path = "pics/image.png"
+#     class_idx = [52, 35]  # Example: visualize for Russia and Japan
 
-    gradcam(model, image_path, class_idx, alpha=0.42, device=device, colormap='jet')
+#     gradcam(model, image_path, class_idx, alpha=0.42, device=device, colormap='jet')

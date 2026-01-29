@@ -101,6 +101,7 @@ with buffer:
             st.error(f"Failed to grab clipboard: {e}")
 
 if image is not None:
+    run_stop = False
     if image_name is None:
         # File uploader path
         image_path = [f"pics/{image.name}"]
@@ -109,7 +110,6 @@ if image is not None:
     else:
         # Clipboard path
         image_path = [f"pics/{image_name}"]
-    run_stop = False
     st.session_state.image_path = image_path
     dotenv.set_key(dotenv_file, "INPUT_IMG", image_path[0])
 else:
