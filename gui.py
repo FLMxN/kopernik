@@ -124,7 +124,6 @@ with run_col:
                     dotenv.load_dotenv(dotenv_file)
                     env = os.environ.copy()
                     output = ""
-                    placeholder = st.empty()
 
                     if system == "Windows":
                             env['PYTHONIOENCODING'] = 'utf-8'
@@ -155,7 +154,7 @@ with run_col:
                     for line in process.stdout:
                         output += line
                             
-                    st.session_state.done = True
+                    st.session_state.done = True                  
                     process.wait()
 with pretty_col:
     pretty = st.toggle(label="Pretty", value=True, key="pretty_toggle", width=256)
@@ -166,12 +165,12 @@ with pretty_col:
             dotenv.set_key(dotenv_file, "PRETTY", "0")
 
 if st.session_state.done:
-    try:
-        dotenv_file = Path(__file__).parent / '.env'
-        dotenv.load_dotenv(dotenv_file)
-        text_output = st.empty()
-        text_output.code(output, language="shellSession", height=512, width=2048)
-        if hasattr(st.session_state, 'image_path'):
-            render_done(st.session_state.image_path)
-    except Exception as e:
-        pass
+                        try:
+                            dotenv_file = Path(__file__).parent / '.env'
+                            dotenv.load_dotenv(dotenv_file)
+                            if hasattr(st.session_state, 'image_path'):
+                                render_done(st.session_state.image_path)
+                            text_output = st.empty()
+                            text_output.code(output, language="shellSession", height=512, width=2048)
+                        except Exception as e:
+                            pass
