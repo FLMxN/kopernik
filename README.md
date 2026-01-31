@@ -1,6 +1,22 @@
-# Kopernik - geography-adjacent ResNet-based CNN trained Google Street View data
+# Kopernik § Geography-adjacent ResNet-based CNN trained with Google Street View data
+
+## TODO
+- [x] Train country model
+- [x] Make CLI inference
+- [x] Train regional model
+- [x] Implement gradcam and gradient visuals
+- [x] Basic web GUI via Streamlit in Python
+- [x] Basic Electron app for Windows
+- [x] Implement box visuals
+- [ ] Fix memory leak in Electron app
+- [ ] Cross-platform Electron app
+- [ ] Release first local app version
+- [ ] Remake web GUI via React/Vue in JS
+- [ ] Host Kopernik on a dedicated web server
+- [ ] Purchase data to retrain models on larger datasets
+
 ## Introduction
-**Kopernik** is an open-source machine learning project, focused on predicting geographic data based on landscape pictures inside or outside of urbanity.
+**Kopernik** is an open-source machine learning project, focused on predicting geographic data (countries, world regions) based on landscape pictures inside or outside of urbanity.
 
 ### License
 *Kopernik*
