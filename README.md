@@ -74,10 +74,11 @@ To fairly estimate and interpret predictions of [this particular](#model-setup) 
 
 + <ins>**Particular attractors:**</ins>
   - **Romania** (RO), **Mexico** (MX) and **Ukraine** (UA) labels may represent features of wide areas with no particular subject (ex. highways) all over the world.
-  - **Botswana** (BW) label may represent features of any kind of landscapes in Japan. 
+  - **Japan** (JP) label may represent features of lush green flora all over the world. 
+  - **Botswana** (BW) label may represent features of any kind of landscapes in Japan.
   - **Canada** (CA) label may represent features of neighbourhoods in USA.
   - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
-  - **Andorra** (AD) label may represent features of noisy or undefined landscapes in Latin American countries.
+  - **Andorra** (AD) label may represent features of noisy or bloated landscapes in Latin American countries.
   - **Poland** (PL) label may represent features of southern recreational or resort locations.
 
 ## Inference
