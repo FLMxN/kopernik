@@ -1,6 +1,9 @@
 const { app, BrowserWindow } = require("electron");
 const { spawn } = require("child_process");
 const path = require("path");
+const { exec } = require("child_process");
+const os = require("os");
+const net = require("net");
 
 let py = null;
 let windowCreated = false;
@@ -19,29 +22,62 @@ function getOS() {
   }
 }
 
-function startPython() {
-  // const exePath = path.join(process.resourcesPath, "backend", "main.exe");
-  // pyProcess = spawn(exePath);
+function waitForPort(
+  port,
+  host = "127.0.0.1",
+  maxWaitMs = 120_000,   // 2 minutes, be generous
+  intervalMs = 300
+) {
+  const start = Date.now();
 
-  // pyProcess.stdout.on("data", d => console.log("py:", d.toString()));
-  // pyProcess.stderr.on("data", d => console.error("py err:", d.toString()));
+  return new Promise((resolve, reject) => {
+    const tryConnect = () => {
+      const socket = new net.Socket();
 
-  if (getOS() == "Windows") {
-    venvPython = path.join(
-    __dirname,
-    "venv",
-    "Scripts",
-    "python.exe"
-  );
-  } 
-  else {
-      venvPython = path.join(
-        __dirname,
-        "venv",
-        "bin",
-        "python"
-      );
+      socket
+        .once("connect", () => {
+          socket.destroy();
+          resolve();
+        })
+        .once("error", () => {
+          socket.destroy();
+          if (Date.now() - start >= maxWaitMs) {
+            reject(new Error("streamlit startup timeout"));
+          } else {
+            setTimeout(tryConnect, intervalMs);
+          }
+        })
+        .connect(port, host);
+    };
+
+    tryConnect();
+  });
+}
+
+function killPythonTree() {
+  if (!py || py.killed) return;
+
+  try {
+    if (os.platform() === "win32") {
+      exec(`taskkill /PID ${py.pid} /T /F`);
+    } else {
+      process.kill(-py.pid, "SIGTERM"); // negative = process group
+
+      setTimeout(() => {
+        try {
+          process.kill(-py.pid, "SIGKILL");
+        } catch {}
+      }, 2000);
     }
+  } catch {}
+}
+
+function startPython() {
+  if (getOS() === "Windows") {
+    venvPython = path.join(__dirname, "venv", "Scripts", "pythonw.exe");
+  } else {
+    venvPython = path.join(__dirname, "venv", "bin", "python");
+  }
 
   py = spawn(
     venvPython,
@@ -50,14 +86,19 @@ function startPython() {
       env: {
         ...process.env,
         VIRTUAL_ENV: path.join(__dirname, "venv"),
-        PATH: path.join(__dirname, "venv", "Scripts") + ";" + process.env.PATH
+        PATH:
+          getOS() === "Windows"
+            ? path.join(__dirname, "venv", "Scripts") + ";" + process.env.PATH
+            : path.join(__dirname, "venv", "bin") + ":" + process.env.PATH
       },
+      detached: true, 
       stdio: ["pipe", "pipe", "pipe"]
     }
   );
 
-
+  py.unref();
 }
+
 
 function createWindow() {
   const win = new BrowserWindow({ width: 1000, height: 700 });
@@ -66,21 +107,13 @@ function createWindow() {
 
 app.whenReady().then(() => {
   startPython();
-  py.stdout.on('data', (data) => {
-    const text = data.toString();
-    // console.log("py:", text);
-    if (!windowCreated && text.includes("URL")) {
-      windowCreated = true;
-      setTimeout(createWindow, 100);
-    }
-  });
-  // setTimeout(createWindow, 4000);
+  waitForPort(8501).then(createWindow);
 });
 
-app.on("window-all-closed", () => {
-  if (py) {
-    // py.stdin.write("SHUTDOWN\n");
-    py.kill();
-  }
-  app.quit();
-});
+app.on("before-quit", killPythonTree);
+app.on("will-quit", killPythonTree);
+
+process.on("exit", killPythonTree);
+process.on("SIGINT", killPythonTree);
+process.on("SIGTERM", killPythonTree);
+process.on("uncaughtException", killPythonTree);
