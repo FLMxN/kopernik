@@ -7,7 +7,7 @@ const net = require("net");
 
 let py = null;
 let windowCreated = false;
-let venvPython;
+let venvPython
 
 function getOS() {
   switch (process.platform) {
@@ -101,13 +101,18 @@ function startPython() {
 
 
 function createWindow() {
-  const win = new BrowserWindow({ width: 1000, height: 700 });
+  const win = new BrowserWindow({ width: 1000, height: 700,
+    // titleBarStyle: 'hidden',
+    // ...(process.platform !== 'darwin' ? { titleBarOverlay: true } : {})
+  });
+  // win.loadFile('front/index.html')
   win.loadURL("http://127.0.0.1:8501")
 }
 
 app.whenReady().then(() => {
   startPython();
   waitForPort(8501).then(createWindow);
+  // createWindow();
 });
 
 app.on("before-quit", killPythonTree);

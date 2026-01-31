@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kopernik</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="container">
+
+    <header class="top">
+      <h1>Kopernik <span class="icon">🧩</span></h1>
+      <div class="links">
+        <a href="#">github/flmxn 🧠</a>
+        <a href="#">readme 🔎</a>
+      </div>
+    </header>
+
+    <section class="section">
+      <h2>New? Run setup to install dependencies</h2>
+      <button class="wide-btn">Setup ⚙️</button>
+    </section>
+
+    <section class="section">
+      <h2>Done? It's time to load your models</h2>
+
+      <div class="grid-2">
+        <div>
+          <label>Country model path</label>
+          <input type="text" value="E:/resnet50_streetview_imagenet1k.pth">
+        </div>
+
+        <div>
+          <label>Regional model path</label>
+          <input type="text" value="E:/resnet50_streetview_imagenet1k_regional.pth">
+        </div>
+      </div>
+
+      <button class="wide-btn">Load models 🚀</button>
+    </section>
+
+    <section class="section">
+      <h2>Do you know the 'image' guy?</h2>
+
+      <div class="grid-2">
+        <div class="dropzone">
+          <p>Drag and drop file here</p>
+          <span>Limit 64MB per file · JPG, JPEG, PNG</span>
+          <button>Browse files</button>
+        </div>
+
+        <div class="clipboard">
+          <label>Or maybe business card?</label>
+          <input type="text" placeholder="From Clipboard 📋">
+        </div>
+      </div>
+
+      <div class="bottom-row">
+        <label class="toggle">
+          <input type="checkbox" checked>
+          <span class="slider"></span>
+          Pretty
+        </label>
+
+        <button class="run-btn">Run 🎯</button>
+      </div>
+    </section>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
