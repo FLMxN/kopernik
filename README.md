@@ -85,11 +85,7 @@ python torch_main.py
 > ``` 
 
 ### GUI
-If CLI works, Streamlit GUI could be a great user experience for occasional use. To start Streamlit local server, use
-```
-python run.py
-```
-and open **localhost:8501** in your browser or run a dedicated Electron application via 
+If CLI works, Streamlit GUI could be a great user experience for occasional use. To start Electron app, use
 ```
 npm start
 ```
