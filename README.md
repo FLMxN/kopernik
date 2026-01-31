@@ -27,8 +27,15 @@ Dataset itself and additional information can be found on [Hugging Face](https:/
 **Credits**: [stochastic](https://huggingface.co/stochastic) (Winson Truong)
 
 ## Installation
+### Requirements
+**OS**: Windows >= 10, OSX >= 12 (Monterey), Linux.
+
+**Software**: Node.JS, Electron (for GUI), Python >= 3.12.
+
+**Hardware**: CUDA-compatible NVIDIA GPU is highly recommended.
+
 ### Dependencies
-Kopernik mostly requires a standart package of machine learning and image processing libraries (+ additional for GUI and UX) for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
+**Kopernik** mostly requires a set of machine learning and image processing libraries (+ few more additional for GUI and UX).
 ```
 pip install torch torchvision scikit-learn datasets numpy cv2 pillow tqdm pathlib dotenv streamlit
 ```
