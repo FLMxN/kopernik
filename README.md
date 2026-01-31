@@ -1,6 +1,7 @@
-# Kopernik - geography-adjacent ResNet-based CNN trained Google Street View data
+# Kopernik § <br />Geography-adjacent ResNet-based CNN trained with Google Street View data
+
 ## Introduction
-**Kopernik** is an open-source machine learning project, focused on predicting geographic data based on landscape pictures inside or outside of urbanity.
+**Kopernik** is an open-source machine learning project, focused on predicting geographic data (countries, world regions) based on landscape pictures inside or outside of urbanity.
 
 ### License
 *Kopernik*
@@ -29,7 +30,7 @@ Dataset itself and additional information can be found on [Hugging Face](https:/
 ### Dependencies
 Kopernik mostly requires a standart package of machine learning and image processing libraries (+ additional for GUI and UX) for Python >= 3.12 (including CUDA-supporting version of PyTorch and collateral) as well as CUDA-supporting GPU for training and/or inference.
 ```
-pip install torch torchvision scikit-learn datasets numpy pillow tqdm pathlib dotenv streamlit
+pip install torch torchvision scikit-learn datasets numpy cv2 pillow tqdm pathlib dotenv streamlit
 ```
 ### Setup
 In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
@@ -115,7 +116,7 @@ Particular predictions:
     Romania (RO): 0.01
 ```
 ![Country model output](output/country_us1.png)
-Country model is confident and determined enough to assume **United States of America** (US) as a definitive prediction. Gradient implies a **major** significance of <ins>**houses** and **trees** in the middle left of the image</ins>.
+Country model is confident and determined enough to assume **United States of America** (US) as a top prediction. Visualization implies a definite significance of <ins>**houses** and **trees** in the left of the image</ins>.
 ```
 Regional predictions:
     Anglosphere and Central Europe: 93.21
@@ -123,4 +124,4 @@ Regional predictions:
     Latin America and South Asia: 0.00
 ```
 ![Regional model output](output/region_us1.png)
-Regional model is confident and determined enough to assume **Anglosphere** as a definitive prediction. Gradient implies a **major significance** of a <ins>**house** in the middle left of the image</ins>, **mediocre** significance of a <ins>**house** in the middle right of the image</ins> and **mediocre** significance of a <ins>**hill valley** in the middle-left top of the image</ins>.
+Regional model is confident and determined enough to assume **Anglosphere** as a top prediction. Visualization implies a definite significance of <ins>**houses** in the left of the image</ins>, a <ins>**house** in the right of the image</ins> and a <ins>**hill valley** in the top of the image</ins>.
