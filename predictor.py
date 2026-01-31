@@ -4,7 +4,7 @@ import torch
 import torch.nn.functional as F
 from torchvision import transforms
 import os
-from torch_gradcam import gradcam
+from torch_gradcam import gradcam, extract_gradcam_blobs
 import dotenv
 
 dotenv_file = Path(__file__).parent / '.env'
@@ -81,9 +81,13 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
             iso_code = key.split('(')[-1].rstrip(')')
             class_idx.append(label2id[iso_code])
     
-    img = gradcam(model, image_path, alpha=alpha, class_idx=class_idx, device=DEVICE, colormap=colormap, task=('region' if is_region else 'country'))
+    img, gcam = gradcam(model, image_path, alpha=alpha, class_idx=class_idx, device=DEVICE, colormap=colormap, task=('region' if is_region else 'country'))
+    blobs = extract_gradcam_blobs(gcam, img_size=(Image.open(image_path).size), threshold_percentile=85)
     # img = Image.open(f"pics/{image_path.split('/')[1]}")
     draw = ImageDraw.Draw(img)
+    for blob in blobs:
+        x1, y1, x2, y2 = blob['bbox']
+        draw.rectangle([x1, y1, x2, y2], outline="red", width=5)
     
     try:
         font_paths = [
@@ -246,7 +250,7 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
                     pass
 
         if x[0]%2 != 0:
-            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='rainbow', id_map=id2label_map, is_region=False, alpha=0.33)             
+            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='turbo', id_map=id2label_map, is_region=False, alpha=0.5)             
 
         if not IS_PRETTY:
             for i, (prob, idx) in enumerate(zip(reg_top_probs, reg_top_indices)):
@@ -337,7 +341,7 @@ def predict_region(model, samples, show_pictures, top_k=3, device=DEVICE, IS_PRE
                 except:
                     pass
         if x[0]%2 != 0:
-            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='jet', id_map=id2label_map_reg, is_region=True, alpha=0.33)             
+            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='plasma', id_map=id2label_map_reg, is_region=True, alpha=0.5)             
 
         preds = dict(sorted(
     ((reg_to_name[k], float(v)) for k, v in regions.items() if v != 0),

@@ -51,9 +51,11 @@ function startPython() {
         ...process.env,
         VIRTUAL_ENV: path.join(__dirname, "venv"),
         PATH: path.join(__dirname, "venv", "Scripts") + ";" + process.env.PATH
-      }
+      },
+      stdio: ["pipe", "pipe", "pipe"]
     }
   );
+
 
 }
 
@@ -77,6 +79,7 @@ app.whenReady().then(() => {
 
 app.on("window-all-closed", () => {
   if (py) {
+    // py.stdin.write("SHUTDOWN\n");
     py.kill();
   }
   app.quit();

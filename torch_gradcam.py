@@ -213,6 +213,125 @@ def apply_gradcam(model, image_path, class_idx, device='cuda',
         'confidence': confidence
     }
 
+def extract_gradcam_blobs(
+    gradcam,
+    img_size,
+    threshold_percentile=75,
+    min_rel_area=0.1,
+    max_blobs=5
+):
+    """
+    Extract multiple representative regions from a Grad-CAM heatmap.
+
+    Parameters
+    ----------
+    gradcam : np.ndarray (h, w)
+        Raw Grad-CAM heatmap.
+    img_size : tuple (W, H)
+        Original image size.
+    threshold_percentile : int
+        Percentile for binarizing Grad-CAM (default: top 15%).
+    min_rel_area : float
+        Minimum blob area relative to the largest blob.
+    max_blobs : int
+        Max number of blobs to return.
+
+    Returns
+    -------
+    regions : list of dicts
+        Each dict contains:
+        {
+            "bbox": (x1, y1, x2, y2),
+            "center": (cx, cy),
+            "area": int,
+            "activation": float
+        }
+    """
+
+    H = gradcam
+
+    if H.ndim == 3:
+        H = H.mean(axis=2)
+
+    H = H.astype(np.float32)
+    H = np.maximum(H, 0)
+
+    # normalize for stability
+    H /= (H.max() + 1e-8)
+
+    # threshold → binary attention map
+    thr = np.percentile(H, threshold_percentile)
+    mask = (H >= thr).astype(np.uint8)
+
+    # connected components
+    mask = np.squeeze(mask)
+    if mask.ndim == 3:
+        mask = cv2.cvtColor(mask, cv2.COLOR_BGR2GRAY)
+
+    num_labels, labels = cv2.connectedComponents(mask)
+
+    blobs = []
+
+    for label in range(1, num_labels):
+        ys, xs = np.where(labels == label)
+        if len(xs) == 0:
+            continue
+
+        area = len(xs)
+        activation = H[ys, xs].sum()
+
+        blobs.append({
+            "label": label,
+            "ys": ys,
+            "xs": xs,
+            "area": area,
+            "activation": activation
+        })
+
+        # print(label, area, activation)
+
+    if not blobs:
+        return []
+
+    # sort by activation mass (stronger evidence first)
+    blobs.sort(key=lambda b: b["activation"], reverse=True)
+
+    # filter by relative size
+    max_area = blobs[0]["area"]
+    blobs = [
+        b for b in blobs
+        if b["area"] >= min_rel_area * max_area
+    ][:max_blobs]
+
+    img_w, img_h = img_size
+    scale_x = img_w / H.shape[1]
+    scale_y = img_h / H.shape[0]
+
+    regions = []
+
+    for b in blobs:
+        xs, ys = b["xs"], b["ys"]
+
+        x1 = int(xs.min() * scale_x)
+        x2 = int((xs.max() + 1) * scale_x)
+        y1 = int(ys.min() * scale_y)
+        y2 = int((ys.max() + 1) * scale_y)
+
+        # weighted centroid
+        weights = H[ys, xs]
+        cx = int((xs * weights).sum() / weights.sum() * scale_x)
+        cy = int((ys * weights).sum() / weights.sum() * scale_y)
+
+        regions.append({
+            "bbox": (x1, y1, x2, y2),
+            "center": (cx, cy),
+            "area": b["area"],
+            "activation": b["activation"]
+        })
+
+    return regions
+
+
 def apply_gradcam_multi(model, image_path, class_indices, device='cuda',
                         alpha=0.42, target_layer='layer4', colormap='jet', combine=True):
     """
@@ -270,6 +389,7 @@ def apply_gradcam_multi(model, image_path, class_indices, device='cuda',
     
     results = []
     heatmaps_list = []
+    confidences = []
     
     # Generate heatmap for each class
     for class_idx in class_indices:
@@ -279,6 +399,7 @@ def apply_gradcam_multi(model, image_path, class_indices, device='cuda',
         visualization = gradcam.visualize(original_image, heatmap_original, alpha=alpha, colormap=colormap)
         
         confidence = probs[0, class_idx].item()
+        confidences.append(confidence)
         
         results.append({
             'visualization': visualization,
@@ -289,7 +410,10 @@ def apply_gradcam_multi(model, image_path, class_indices, device='cuda',
         heatmaps_list.append(heatmap_original)
     
     if combine:
-        # Blend all heatmaps onto original image with same colormap
+        
+        combined_heatmap = np.mean(np.stack(heatmaps_list, axis=0), axis=0)
+        combined_heatmap /= (combined_heatmap.max() + 1e-8)
+
         blended = original_np.astype(np.float32)
         
         for heatmap in heatmaps_list:
@@ -307,8 +431,10 @@ def apply_gradcam_multi(model, image_path, class_indices, device='cuda',
         return {
             'visualization': combined_image,
             'heatmaps': heatmaps_list,
+            'combined_heatmap': combined_heatmap,
             'confidences': [probs[0, idx].item() for idx in class_indices]
         }
+
     else:
         return results
 
@@ -324,7 +450,7 @@ def gradcam(model, image_path, class_idx, alpha, device, colormap, task):
         
     # Save visualizations
     # result['visualization'].save(f'output/{task}_{image_path.split("/")[1]}')
-    return result['visualization']
+    return result['visualization'], result['combined_heatmap']
 
 # if __name__ == "__main__":
 #     # Example usage
