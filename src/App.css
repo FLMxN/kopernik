@@ -1,0 +1,78 @@
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+.kopernik-title {
+  font-family: var(--md-sys-font-family);
+  font-size: var(--md-headline-size);
+  font-weight: var(--md-headline-weight);
+  font-variation-settings: "GRAD" var(--md-headline-grad);
+  color: var(--md-sys-color-on-surface);
+}
+
+.logo {
+  height: 5em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo.kopernik:hover {
+  filter: drop-shadow(0 0 2em var(--md-sys-color-primary));
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(1) .logo {
+    animation: logo-spin infinite 30s linear;
+  }
+}
+
+.logotitle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  left:0;
+  top:0;
+  position: absolute;
+  padding-left: 3rem;
+  padding-top: 0.03rem;
+}
+
+.links {
+  display: flex;
+  flex-direction: row;
+  gap: 5rem;
+  position: absolute;
+  top: 1.5rem;
+  right: 3rem;
+}
+
+.links a {
+  font-family: var(--md-sys-font-family);
+  font-size: var(--md-label-size);
+  font-weight: var(--md-label-weight);
+  font-variation-settings: "GRAD" var(--md-headline-grad);
+  color: var(--md-sys-color-on-surface);
+
+  text-decoration: none;
+  cursor: pointer;
+
+  transition: color 200ms;
+}
+
+.links a:hover {
+  color: var(--md-sys-color-primary);
+}
+

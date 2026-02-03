@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Kopernik</title>
+  <style>
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background: #0f1115;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: system-ui, sans-serif;
+      overflow: hidden;
+    }
+
+    .loader {
+      font-size: 128px;
+      animation: spin 1.4s cubic-bezier(0.4, 0.0, 0.2, 2) infinite;
+      user-select: none;
+      will-change: transform;
+    }
+
+    .loader:hover {
+    filter: drop-shadow(0px 0px 20px #befd59d8);
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="loader" id="loader">🌎</div>
+
+  <script>
+    const emojis = ["🌎", "🌙", "⭐️"];
+    let i = 0;
+
+    setInterval(() => {
+      i = (i + 1) % emojis.length;
+      document.getElementById("loader").textContent = emojis[i];
+    }, 2500);
+  </script>
+</body>
+</html>

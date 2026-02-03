@@ -1,0 +1,56 @@
+:root {
+  --md-sys-font-family: 'Roboto Flex', system-ui, sans-serif;
+
+  --md-headline-size: 3rem;
+  --md-headline-weight: 600;
+  --md-headline-grad: 100;
+
+  --md-label-size: 1.5rem;
+  --md-label-weight: 500;
+
+  --md-body-size: 1rem;
+  --md-body-weight: 400;
+
+  --md-seed-color: #ffbe44;
+
+  /* light scheme */
+  --md-sys-color-surface: #ffffff;
+  --md-sys-color-on-surface: #1c1b1f;
+
+  --md-sys-color-primary: #aa8000;
+  --md-sys-color-on-primary: #ffffff;
+
+  --md-sys-color-secondary: #6b5e3f;
+  --md-sys-color-on-secondary: #ffffff;
+
+  --md-sys-color-outline: #79747e;
+
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --md-sys-color-surface: #121212;
+    --md-sys-color-on-surface: #e6e1e5;
+
+    --md-sys-color-primary: #ffba7a;
+    --md-sys-color-on-primary: #3f2e00;
+
+    --md-sys-color-secondary: #d0c6a1;
+    --md-sys-color-on-secondary: #3a2f15;
+
+    --md-sys-color-outline: #938f99;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--md-sys-font-family);
+  min-width: 320px;
+  min-height: 100vh;
+  background: var(--md-sys-color-surface);
+  color: var(--md-sys-color-on-surface);
+}

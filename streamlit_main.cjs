@@ -7,7 +7,8 @@ const net = require("net");
 
 let py = null;
 let windowCreated = false;
-let venvPython
+let venvPython;
+let win;
 
 function getOS() {
   switch (process.platform) {
@@ -25,7 +26,7 @@ function getOS() {
 function waitForPort(
   port,
   host = "127.0.0.1",
-  maxWaitMs = 120_000,   // 2 minutes, be generous
+  maxWaitMs = 120_000,
   intervalMs = 300
 ) {
   const start = Date.now();
@@ -42,7 +43,7 @@ function waitForPort(
         .once("error", () => {
           socket.destroy();
           if (Date.now() - start >= maxWaitMs) {
-            reject(new Error("streamlit startup timeout"));
+            reject(new Error("startup timeout"));
           } else {
             setTimeout(tryConnect, intervalMs);
           }
