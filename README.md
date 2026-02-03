@@ -96,7 +96,7 @@ python torch_main.py
 ### GUI
 If CLI works, Streamlit GUI could be a great user experience for occasional use. To start Electron app, use
 ```
-npm start
+npm run dev:streamlit
 ```
 and enjoy!
 
