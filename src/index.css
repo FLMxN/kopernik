@@ -1,6 +1,7 @@
 :root {
-  --md-sys-font-family: 'Roboto Flex', system-ui, sans-serif;
-
+  --md-ref-typeface-brand: "Roboto Flex", system-ui, sans-serif;
+  --md-ref-typeface-plain: "Roboto Flex", system-ui, sans-serif;
+  
   --md-headline-size: 3rem;
   --md-headline-weight: 600;
   --md-headline-grad: 100;

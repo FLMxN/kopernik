@@ -13,7 +13,6 @@ import os
 import sys
 import io
 
-# Force UTF-8 encoding for stdout to handle emojis properly
 if sys.stdout.encoding != 'utf-8':
     sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding='utf-8')
 
@@ -245,7 +244,7 @@ def diagnose_model(model, checkpoint):
     if 'val_coord_loss' in checkpoint:
         print(f"Checkpoint coordinate loss: {checkpoint['val_coord_loss']:.4f}")
 
-if __name__ == "__main__":
+def main():
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
     if not IS_PRETTY:
@@ -296,3 +295,6 @@ if __name__ == "__main__":
         predict_region(samples=sample_imgs, model=model_reg, IS_PRETTY=IS_PRETTY, show_pictures=True)
 
     # diagnose_model(model, ckpt)
+
+if __name__ == 'main':
+    main()

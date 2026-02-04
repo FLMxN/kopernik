@@ -5,8 +5,16 @@
   text-align: center;
 }
 
+.body {
+  align-items: center;
+  justify-content: center;
+  display: flex;
+  flex-direction: column;
+  gap: 10rem;
+}
+
 .kopernik-title {
-  font-family: var(--md-sys-font-family);
+  font-family: var(--md-ref-typeface-brand);
   font-size: var(--md-headline-size);
   font-weight: var(--md-headline-weight);
   font-variation-settings: "GRAD" var(--md-headline-grad);
@@ -53,26 +61,22 @@
 .links {
   display: flex;
   flex-direction: row;
-  gap: 5rem;
+  gap: 20%;
   position: absolute;
-  top: 1.5rem;
-  right: 3rem;
+  top: 3.5rem;
+  right: 6rem;
 }
 
-.links a {
-  font-family: var(--md-sys-font-family);
+.prettyswitch {
+  font-family: var(--md-ref-typeface-plain);
   font-size: var(--md-label-size);
   font-weight: var(--md-label-weight);
   font-variation-settings: "GRAD" var(--md-headline-grad);
   color: var(--md-sys-color-on-surface);
-
-  text-decoration: none;
-  cursor: pointer;
-
-  transition: color 200ms;
 }
 
-.links a:hover {
-  color: var(--md-sys-color-primary);
+.run {
+  display: flex;
+  flex-direction: row;
+  gap: 20%;
 }
-
