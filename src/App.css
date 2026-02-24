@@ -61,10 +61,10 @@
 .links {
   display: flex;
   flex-direction: row;
-  gap: 20%;
+  gap: 10%;
   position: absolute;
   top: 3.5rem;
-  right: 6rem;
+  right: 5rem;
 }
 
 .prettyswitch {
@@ -79,4 +79,12 @@
   display: flex;
   flex-direction: row;
   gap: 20%;
+}
+
+.dropzone-text {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-label-size);
+  font-weight: var(--md-label-weight);
+  font-variation-settings: "GRAD" var(--md-headline-grad);
+  color: var(--md-sys-color-on-surface);
 }

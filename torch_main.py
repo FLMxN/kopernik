@@ -296,5 +296,5 @@ def main():
 
     # diagnose_model(model, ckpt)
 
-if __name__ == 'main':
+if __name__ == '__main__':
     main()
