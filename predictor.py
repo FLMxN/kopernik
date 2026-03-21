@@ -121,9 +121,13 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
         draw.text((x, y), line, fill=fill, font=font)       
         y += line_height
 
-    output_filename = f'output/{task}_{image_path.split("/")[1]}'
-    img.save(output_filename)
-    dotenv.set_key(dotenv_file, f"{task.upper()}_IMG", output_filename)
+    output_filename = f'output/{task}_{os.path.basename(image_path)}'
+    if show_pictures:
+        img.save(output_filename)
+        dotenv.set_key(dotenv_file, f"{task.upper()}_IMG", output_filename)
+        return f'/{output_filename}'
+
+    return None
 
     # img.save(f"output/{image_path.split('/')[1]}")
     # if show_pictures:
@@ -134,6 +138,7 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
 
 
 def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PRETTY=False):
+    country_out = None
     if IS_PRETTY:
         state_score = {
         "AD":0, "AE":0, "AR":0, "AU":0,
@@ -250,7 +255,7 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
                     pass
 
         if x[0]%2 != 0:
-            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='turbo', id_map=id2label_map, is_region=False, alpha=0.5)             
+            country_out = draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='turbo', id_map=id2label_map, is_region=False, alpha=0.5)
 
         if not IS_PRETTY:
             for i, (prob, idx) in enumerate(zip(reg_top_probs, reg_top_indices)):
@@ -298,7 +303,13 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
     for y in preds:
         print(f"    {y}: {preds[y]:.2f}")
 
+    return {
+        "predictions": {k: round(v, 2) for k, v in preds.items()},
+        "gradcam": country_out
+    }
+
 def predict_region(model, samples, show_pictures, top_k=3, device=DEVICE, IS_PRETTY=False):
+    region_out = None
     regions = {"east_asia":0, "nordic":0, "post_socialist":0, "anglosphere":0, "mediterranean":0, "tropical":0, "arid_african":0}
     for x in enumerate(samples, 0):
         if x[0]%2 == 0:
@@ -341,7 +352,7 @@ def predict_region(model, samples, show_pictures, top_k=3, device=DEVICE, IS_PRE
                 except:
                     pass
         if x[0]%2 != 0:
-            draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='plasma', id_map=id2label_map_reg, is_region=True, alpha=0.5)             
+            region_out = draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='plasma', id_map=id2label_map_reg, is_region=True, alpha=0.5)             
 
         preds = dict(sorted(
     ((reg_to_name[k], float(v)) for k, v in regions.items() if v != 0),
@@ -351,3 +362,8 @@ def predict_region(model, samples, show_pictures, top_k=3, device=DEVICE, IS_PRE
     print(f"\nRegional predictions:")
     for y in preds:
         print(f"    {y}: {preds[y]:.2f}")
+
+    return {
+        "predictions": {k: round(v, 2) for k, v in preds.items()},
+        "gradcam": region_out
+    }

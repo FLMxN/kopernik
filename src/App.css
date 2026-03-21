@@ -10,7 +10,8 @@
   justify-content: center;
   display: flex;
   flex-direction: column;
-  gap: 10rem;
+  gap: 2rem;
+  padding-top: 5.5rem;
 }
 
 .kopernik-title {
@@ -86,5 +87,173 @@
   font-size: var(--md-label-size);
   font-weight: var(--md-label-weight);
   font-variation-settings: "GRAD" var(--md-headline-grad);
+  color: var(--md-sys-color-on-surface);
+}
+
+.dropzone-shell {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.dropzone-panel {
+  width: calc(100vw - 16rem);
+  max-width: 1100px;
+  border-radius: 16px;
+  padding: 2rem;
+  text-align: center;
+  color: var(--md-sys-color-on-surface);
+  transition: all 120ms ease;
+  box-sizing: border-box;
+}
+
+.dropzone-notification {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.5rem;
+  padding: 0.2rem 0.9rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--md-sys-color-primary) 18%, transparent);
+  color: var(--md-sys-color-primary);
+  font-family: var(--md-ref-typeface-plain);
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1;
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.dropzone-notification.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.output h2 {
+  font-family: var(--md-ref-typeface-brand);
+  font-size: var(--md-headline-size);
+  font-weight: var(--md-headline-weight);
+  font-variation-settings: "GRAD" var(--md-headline-grad);
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 16px;
+}
+
+.output {
+  width: min(100%, 1100px);
+}
+
+.output h4 {
+  font-family: var(--md-ref-typeface-brand);
+  font-size: var(--md-title-size);
+  font-weight: var(--md-title-weight);
+  font-variation-settings: "GRAD" var(--md-title-grad);
+  color: var(--md-sys-color-on-surface);
+  margin-bottom: 8px;
+}
+
+.output-original {
+  width: 100%;
+  margin-bottom: 24px;
+}
+
+.output-results-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 24px;
+  align-items: start;
+}
+
+.output-panel {
+  width: 100%;
+}
+
+.output-table-card {
+  margin-top: 12px;
+}
+
+.output-image {
+  width: 100%;
+  border-radius: 8px;
+  display: block;
+  height: auto;
+}
+
+.output-image-clickable {
+  cursor: zoom-in;
+}
+
+.image-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: rgba(0, 0, 0, 0.88);
+  box-sizing: border-box;
+}
+
+.image-modal-content {
+  max-width: min(96vw, 1600px);
+  max-height: 90vh;
+  border-radius: 12px;
+  display: block;
+}
+
+.image-modal-close {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: 999px;
+  background: rgba(18, 18, 18, 0.78);
+  color: var(--md-sys-color-on-surface);
+  padding: 0.65rem 1rem;
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-label-size);
+  font-weight: var(--md-label-weight);
+  font-variation-settings: "GRAD" var(--md-label-grad);
+  line-height: 1;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .output-results-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.output table {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-body-size);
+  font-weight: var(--md-body-weight);
+  font-variation-settings: "GRAD" var(--md-body-grad);
+  color: var(--md-sys-color-on-surface);
+  border-collapse: collapse;
+  width: 100%;
+}
+
+.output table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.output table td:first-child {
+  font-weight: 500;
+  text-align: left;
+}
+
+.output table td:last-child {
+  text-align: right;
+}
+
+.output pre {
+  font-family: var(--md-ref-typeface-plain);
+  font-size: var(--md-body-size);
+  font-weight: var(--md-body-weight);
+  font-variation-settings: "GRAD" var(--md-body-grad);
   color: var(--md-sys-color-on-surface);
 }

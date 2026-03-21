@@ -41,7 +41,7 @@ dataset_ref.py
 
 node_modules/
 
-output/*clipboard*
+output/
 pics/*clipboard*
 
 venv/

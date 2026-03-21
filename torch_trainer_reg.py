@@ -209,7 +209,6 @@ if __name__ == "__main__":
     patience_counter = 0
     
     for epoch in range(NUM_EPOCHS):
-        # Training
         model.train()
         train_region_loss = 0.0
         
@@ -221,19 +220,12 @@ if __name__ == "__main__":
             region_labels = region_labels.to(DEVICE, non_blocking=True)
             
             with torch.autocast(device_type="cuda", enabled=FP16):
-                # Forward pass
                 region_logits = model(imgs)
-                
-                # Compute losses
                 loss_region = criterion_region(region_logits, region_labels)
-                
-                # Combined loss
                 loss = (REGION_LOSS_WEIGHT * loss_region) / GRADIENT_ACCUMULATION_STEPS
             
-            # Backward pass with gradient accumulation
             scaler.scale(loss).backward()
             
-            # Update weights every GRADIENT_ACCUMULATION_STEPS
             if (batch_idx + 1) % GRADIENT_ACCUMULATION_STEPS == 0:
                 scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
@@ -241,10 +233,8 @@ if __name__ == "__main__":
                 scaler.update()
                 optimizer.zero_grad()
             
-            # Track losses
             train_region_loss += loss_region.item() * GRADIENT_ACCUMULATION_STEPS
             
-            # Update progress bar
             pbar.set_postfix({
                 'region_loss': loss_region.item(),
                 'lr': optimizer.param_groups[0]['lr']

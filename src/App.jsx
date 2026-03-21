@@ -13,21 +13,22 @@ let res;
 let image_name = "lol.png";
 
 function App() {
-  const [pretty, setPretty] = useState(0)
+  const [pretty, setPretty] = useState(1)
   const [output, setOutput] = useState()
   const [pic, setImage] = useState()
+  const [origUrl, setOrigUrl] = useState()
+  const [fullscreenImage, setFullscreenImage] = useState(null)
 
   async function form(image, pretty) {
   try {
-    const requestBody = new URLSearchParams({
-      image: image,
-      pretty: pretty%2,
-      act: "run"
-    });
+    const formData = new FormData();
+    formData.append('image', image);
+    formData.append('pretty', pretty % 2);
+    formData.append('act', 'run');
 
     const response = await fetch("http://127.0.0.1:8000/inference", {
       method: "POST",
-      body: requestBody.toString(),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -57,8 +58,80 @@ function App() {
       <md-outlined-button onClick={() => window.open("https://github.com/FLMxN/kopernik/blob/main/LICENSE", "_blank")}>license<svg slot="icon" viewBox="0 0 48 48"><path d="M9 42q-1.2 0-2.1-.9Q6 40.2 6 39V9q0-1.2.9-2.1Q7.8 6 9 6h13.95v3H9v30h30V25.05h3V39q0 1.2-.9 2.1-.9.9-2.1.9Zm10.1-10.95L17 28.9 36.9 9H25.95V6H42v16.05h-3v-10.9Z"/></svg></md-outlined-button>
       </div>
     </div>
+    <div className="output">
+      {output ? (
+        <div>
+          <h2>Inference results</h2>
+
+          {origUrl && (
+            <div className="output-original">
+              <img
+                src={origUrl}
+                alt="original"
+                className="output-image output-image-clickable"
+                onClick={() => setFullscreenImage(origUrl)}
+              />
+            </div>
+          )}
+
+          <div className="output-results-row">
+            {output.country_predictions?.gradcam && (
+              <div className="output-panel">
+                <img
+                  src={`http://127.0.0.1:8000${output.country_predictions.gradcam}`}
+                  alt="country gradcam"
+                  className="output-image output-image-clickable"
+                  onClick={() => setFullscreenImage(`http://127.0.0.1:8000${output.country_predictions.gradcam}`)}
+                />
+                {output.country_predictions?.predictions && (
+                  <div className="output-table-card">
+                    <table>
+                      <tbody>
+                        {Object.entries(output.country_predictions.predictions).slice(0, 8).map(([key, value]) => (
+                          <tr key={key}>
+                            <td>{key}</td>
+                            <td style={{ paddingLeft: '12px', fontWeight: 700 }}>{value.toFixed(2)}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {output.region_predictions?.gradcam && (
+              <div className="output-panel">
+                <img
+                  src={`http://127.0.0.1:8000${output.region_predictions.gradcam}`}
+                  alt="region gradcam"
+                  className="output-image output-image-clickable"
+                  onClick={() => setFullscreenImage(`http://127.0.0.1:8000${output.region_predictions.gradcam}`)}
+                />
+                {output.region_predictions?.predictions && (
+                  <div className="output-table-card">
+                    <table>
+                      <tbody>
+                        {Object.entries(output.region_predictions.predictions).slice(0, 8).map(([key, value]) => (
+                          <tr key={key}>
+                            <td>{key}</td>
+                            <td style={{ paddingLeft: '12px', fontWeight: 700 }}>{value.toFixed(2)}%</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : (
+        <pre></pre>
+      )}
+    </div>
     <div className='Dropzone'>
-    <FileDropzone onFile={file => setImage(file)}></FileDropzone>
+    <FileDropzone onFile={file => { setImage(file); setOrigUrl(URL.createObjectURL(file)); }}></FileDropzone>
     </div>
     <div className='run'>
       <label className='prettyswitch'>
@@ -68,16 +141,28 @@ function App() {
             onClick={() => setPretty(prev => 1 - prev)}>
           </md-switch>
         </label>
-      <md-elevated-button onClick={() => form(pic, pretty)}>
+  <md-elevated-button onClick={() => form(pic, pretty)} disabled={!pic}>
         run
         <svg slot="icon" viewBox="0 0 48 48"><path d="M6 40V8l38 16Zm3-4.65L36.2 24 9 12.5v8.4L21.1 24 9 27Zm0 0V12.5 27Z"/></svg>
         </md-elevated-button>
     </div>
-    <div className="output">
-  <pre>
-  {JSON.stringify(output)}
-  </pre>
-    </div>
+    {fullscreenImage && (
+      <div className="image-modal" onClick={() => setFullscreenImage(null)}>
+        <button
+          type="button"
+          className="image-modal-close"
+          onClick={() => setFullscreenImage(null)}
+        >
+          close
+        </button>
+        <img
+          src={fullscreenImage}
+          alt="fullscreen preview"
+          className="image-modal-content"
+          onClick={e => e.stopPropagation()}
+        />
+      </div>
+    )}
     </div>
     </>
   )

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import "@material/web/button/filled-button.js";
 import '@material/web/button/outlined-button.js';
 import './App.css'
@@ -7,61 +7,87 @@ import './App.css'
 function FileDropzone({ onFile }) {
   const inputRef = useRef(null);
   const [dragging, setDragging] = useState(false);
-  const [file, setFile] = useState(null);
+  const [notification, setNotification] = useState("");
 
-    function onFileChange(e) {
-    const uploadedFile = e.target.files[0];
-    setFile(uploadedFile);
+  useEffect(() => {
+    if (!notification) return undefined;
+
+    const timeoutId = setTimeout(() => {
+      setNotification("");
+    }, 2200);
+
+    return () => clearTimeout(timeoutId);
+  }, [notification]);
+
+
+  function handleFiles(fileInput) {
+    const uploadedFile = fileInput?.[0] ?? fileInput;
+    if (!uploadedFile) return;
+
+    onFile(uploadedFile);
+    setNotification(`Loaded ${uploadedFile.name}`);
+
+    if (inputRef.current) {
+      inputRef.current.value = "";
     }
+  }
 
+  function handleInputChange(e) {
+    handleFiles(e.target.files);
+  }
 
-  function handleFiles(files) {
-    if (!files || !files[0]) return;
-    onFile(files[0]);
+  function openFilePicker() {
+    if (!inputRef.current) return;
+
+    inputRef.current.value = "";
+    inputRef.current.click();
   }
 
   return (
-    <div
-      onDragOver={e => {
-        e.preventDefault();
-        setDragging(true);
-      }}
-      onDragLeave={() => setDragging(false)}
-      onDrop={e => {
-        e.preventDefault();
-        setDragging(false);
-        handleFiles(e.dataTransfer.files);
-      }}
-      style={{
-        borderRadius: "16px",
-        padding: "2rem",
-        textAlign: "center",
-        border: dragging
-          ? "2px solid var(--md-sys-color-primary)"
-          : "2px dashed var(--md-sys-color-outline)",
-        background: dragging
-          ? "var(--md-sys-color-primary-container)"
-          : "var(--md-sys-color-surface)",
-        color: "var(--md-sys-color-on-surface)",
-        transition: "all 120ms ease"
-      }}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        hidden
-        onChange={e => handleFiles(e.target.files[0])}
-      />
-
-      <p className="dropzone-text">
-        drag & drop a file here
-      </p>
-
-      <md-outlined-button
-        onClick={() => inputRef.current.click()}
+    <div className="dropzone-shell">
+      <div
+        className="dropzone-panel"
+        onDragOver={e => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={e => {
+          e.preventDefault();
+          setDragging(false);
+          handleFiles(e.dataTransfer.files);
+        }}
+        style={{
+          border: dragging
+            ? "2px solid var(--md-sys-color-primary)"
+            : "2px dashed var(--md-sys-color-outline)",
+          background: dragging
+            ? "var(--md-sys-color-primary-container)"
+            : "var(--md-sys-color-surface)"
+        }}
       >
-        pick an image
-      </md-outlined-button>
+        <input
+          ref={inputRef}
+          type="file"
+          accept="image/*"
+          hidden
+          onChange={handleInputChange}
+        />
+
+        <p className="dropzone-text">
+          drag & drop a file here
+        </p>
+
+        <md-outlined-button
+          onClick={openFilePicker}
+        >
+          pick an image
+        </md-outlined-button>
+      </div>
+
+      <div className={`dropzone-notification ${notification ? 'visible' : ''}`}>
+        {notification}
+      </div>
     </div>
   );
 }
