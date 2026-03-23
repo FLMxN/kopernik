@@ -27,7 +27,7 @@ function App() {
     formData.append('pretty', pretty % 2);
     formData.append('act', 'run');
 
-    const response = await fetch(`${API_BASE}/inference`, {
+    const response = await fetch(`${API_BASE}/api/inference`, {
       method: "POST",
       body: formData,
     });
