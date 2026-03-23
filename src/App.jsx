@@ -11,6 +11,7 @@ import FileDropzone from './dropzone.jsx'
 
 let res;
 let image_name = "lol.png";
+const API_BASE = "https://151.241.234.225.sslip.io";
 
 function App() {
   const [pretty, setPretty] = useState(1)
@@ -26,7 +27,7 @@ function App() {
     formData.append('pretty', pretty % 2);
     formData.append('act', 'run');
 
-    const response = await fetch("http://127.0.0.1:8000/inference", {
+    const response = await fetch(`${API_BASE}/inference`, {
       method: "POST",
       body: formData,
     });
@@ -78,10 +79,10 @@ function App() {
             {output.country_predictions?.gradcam && (
               <div className="output-panel">
                 <img
-                  src={`http://127.0.0.1:8000${output.country_predictions.gradcam}`}
+                  src={`${API_BASE}${output.country_predictions.gradcam}`}
                   alt="country gradcam"
                   className="output-image output-image-clickable"
-                  onClick={() => setFullscreenImage(`http://127.0.0.1:8000${output.country_predictions.gradcam}`)}
+                  onClick={() => setFullscreenImage(`${API_BASE}${output.country_predictions.gradcam}`)}
                 />
                 {output.country_predictions?.predictions && (
                   <div className="output-table-card">
@@ -103,10 +104,10 @@ function App() {
             {output.region_predictions?.gradcam && (
               <div className="output-panel">
                 <img
-                  src={`http://127.0.0.1:8000${output.region_predictions.gradcam}`}
+                  src={`${API_BASE}${output.region_predictions.gradcam}`}
                   alt="region gradcam"
                   className="output-image output-image-clickable"
-                  onClick={() => setFullscreenImage(`http://127.0.0.1:8000${output.region_predictions.gradcam}`)}
+                  onClick={() => setFullscreenImage(`${API_BASE}${output.region_predictions.gradcam}`)}
                 />
                 {output.region_predictions?.predictions && (
                   <div className="output-table-card">

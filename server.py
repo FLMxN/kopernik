@@ -84,7 +84,7 @@ app.mount("/output", StaticFiles(directory="output"), name="output")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],  # or "*"
+    allow_origins=["http://localhost:5173", "https://flmxn.github.io"],  # or "*"
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
