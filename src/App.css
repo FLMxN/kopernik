@@ -1,17 +1,26 @@
 #root {
   max-width: 1280px;
   margin: 0 auto;
-  padding: 2rem;
+  padding: 1.5rem;
   text-align: center;
+  box-sizing: border-box;
 }
 
 .body {
-  align-items: center;
-  justify-content: center;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 2rem;
-  padding-top: 5.5rem;
+  width: min(100%, 1100px);
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  flex-wrap: wrap;
 }
 
 .kopernik-title {
@@ -51,35 +60,41 @@
   display: flex;
   align-items: center;
   justify-content: center;
-
-  left:0;
-  top:0;
-  position: absolute;
-  padding-left: 3rem;
-  padding-top: 0.03rem;
+  gap: 0.5rem;
 }
 
 .links {
   display: flex;
-  flex-direction: row;
-  gap: 10%;
-  position: absolute;
-  top: 3.5rem;
-  right: 5rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
 }
 
 .prettyswitch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
   font-family: var(--md-ref-typeface-plain);
   font-size: var(--md-label-size);
   font-weight: var(--md-label-weight);
   font-variation-settings: "GRAD" var(--md-headline-grad);
   color: var(--md-sys-color-on-surface);
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.prettyswitch-label {
+  display: inline-block;
 }
 
 .run {
   display: flex;
   flex-direction: row;
-  gap: 20%;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 1rem 1.5rem;
 }
 
 .dropzone-text {
@@ -98,7 +113,7 @@
 }
 
 .dropzone-panel {
-  width: calc(100vw - 16rem);
+  width: min(100%, 1100px);
   max-width: 1100px;
   border-radius: 16px;
   padding: 2rem;
@@ -223,6 +238,93 @@
 @media (max-width: 900px) {
   .output-results-row {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  #root {
+    padding: 1rem;
+  }
+
+  .header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1rem;
+  }
+
+  .logotitle {
+    justify-content: center;
+  }
+
+  .kopernik-title {
+    font-size: clamp(2rem, 9vw, 3rem);
+  }
+
+  .logo {
+    height: 3.5em;
+    padding: 0.75em;
+  }
+
+  .links {
+    justify-content: center;
+  }
+
+  .dropzone-panel {
+    padding: 1.25rem;
+  }
+
+  .dropzone-text {
+    font-size: 1.1rem;
+  }
+
+  .run {
+    flex-direction: column;
+  }
+
+  .prettyswitch {
+    font-size: 1.1rem;
+  }
+
+  .image-modal {
+    padding: 1rem;
+  }
+
+  .image-modal-close {
+    top: 1rem;
+    right: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  #root {
+    padding: 0.75rem;
+  }
+
+  .body {
+    gap: 1.25rem;
+  }
+
+  .kopernik-title {
+    font-size: clamp(1.75rem, 10vw, 2.4rem);
+  }
+
+  .links {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .dropzone-panel {
+    padding: 1rem;
+    border-radius: 12px;
+  }
+
+  .output h2 {
+    font-size: clamp(1.5rem, 7vw, 2rem);
+  }
+
+  .output table td {
+    padding: 8px 6px;
+    font-size: 0.95rem;
   }
 }
 

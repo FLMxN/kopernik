@@ -136,7 +136,7 @@ function App() {
     </div>
     <div className='run'>
       <label className='prettyswitch'>
-          pretty
+          <span className='prettyswitch-label'>pretty</span>
           <md-switch
             selected={!!pretty}
             onClick={() => setPretty(prev => 1 - prev)}>
