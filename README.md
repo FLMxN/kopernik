@@ -4,7 +4,7 @@
 **Kopernik** is an open-source machine learning project, focused on predicting geographic data (countries, world regions) based on landscape pictures inside or outside of urbanity.
 
 ### License
-GPL
+MIT
 
 ### Architecture
 Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training both [developer models](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class).
