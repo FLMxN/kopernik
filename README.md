@@ -174,4 +174,4 @@ Regional predictions:
 Regional model is confident and determined enough to assume **Anglosphere and Central Europe** as a top prediction. Visualization implies a definite significance of <ins>**houses** in the left of the image</ins>, a <ins>**house** in the right of the image</ins> and a <ins>**hill valley** in the top of the image</ins>.
 
 ### License
-MIT, see LICENSE
+MIT, see [LICENSE](LICENSE)
