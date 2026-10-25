@@ -85,7 +85,7 @@ Training downloads its dataset from Hugging Face and requires the training depen
 > This section summarizes observed behavior of the current developer checkpoints. Predictions and label tendencies may change with different models or training data.
 
 > [!IMPORTANT]
-> It`s a common mistake to take prediction as-is, when working with a mathematical model (such as that). Interpret labels in the context of the model and its training data; the model may respond to visual similarities rather than country-specific features.
+> It`s a common mistake to take prediction as-is, when working with a mathematical model (such as this one). Interpret labels in the context of the model and its training data; the model may respond to visual similarities rather than country-specific features.
 
 Predictions are estimates from the model, not verified locations. Scores depend on the checkpoint and training data; treat them as relative model outputs, not calibrated measures of geographic certainty. The country model's pretty output groups Argentina, Bhutan, Cambodia, Eswatini, and New Zealand under `UNDEFINED`.
 
