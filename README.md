@@ -1,94 +1,128 @@
-# Kopernik § <br />Geography-adjacent ResNet-based CNN trained with Google Street View data
+<div align="center">
 
-## Introduction
-**Kopernik** is an open-source machine learning project, focused on predicting geographic data (countries, world regions) based on landscape pictures inside or outside of urbanity.
+<img src="src/assets/kopernik.svg" alt="Kopernik logo" style="width:35%; height:auto;">
 
-### License
-MIT
+# Kopernik
 
-### Architecture
-Kopernik`s model architecture is based on Microsoft [Resnet-50](https://huggingface.co/microsoft/resnet-50) with pretrained weights of [IMAGENET-1K](https://huggingface.co/datasets/ILSVRC/imagenet-1k) in all occurences. Dataset used for training both [developer models](#model-setup) consists of <ins>**approximately 11.5k panorama images of 56 countries**</ins> (around 175 panoramas for each class).
-Dataset itself and additional information can be found on [Hugging Face](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2)
+<p align="center">
+  <a href="https://github.com/FLMxN/kopernik/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-a6e3a1?style=for-the-badge&logo=opensourceinitiative&logoColor=cdd6f4&labelColor=181825" alt="License"></a>
+  <img src="https://img.shields.io/badge/python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=cdd6f4&labelColor=181825" alt="Python Version">
+  <img src="https://img.shields.io/badge/torch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=cdd6f4&labelColor=181825" alt="PyTorch">
+  <a href="https://github.com/FLMxN/kopernik/stargazers"><img src="https://img.shields.io/github/stars/FLMxN/kopernik?style=for-the-badge&logo=github&logoColor=cdd6f4&label=stars&labelColor=181825&color=f9e2af" alt="GitHub Stars"></a>
+</p>
 
-**Credits**: [stochastic](https://huggingface.co/stochastic) (Winson Truong)
+Open-source deep learning research tool for inspecting geographic data based on landscape pictures inside or outside of urbanity via neural networks.
+
+</div>
+
+## Table of contents
+- [Architecture](#architecture)
+- [Installation](#installation)
+  - [Requirements](#requirements)
+  - [Python dependencies](#python-dependencies)
+  - [Model and input setup](#model-and-input-setup)
+- [Understanding predictions](#understanding-predictions)
+- [Inference](#inference)
+  - [CLI](#cli)
+  - [GUI](#gui)
+  - [Pretty output digest](#pretty-output-digest)
+- [License](#license)
+
+## Architecture
+Kopernik uses two **ResNet-50** classifiers initialized with **ImageNet-1K** weights:
+
+- The country classifier predicts **56** country labels.
+- The regional classifier predicts one of **7** project-defined regions.
+
+The training scripts use different datasets: [torch_trainer.py](torch_trainer.py) loads the [grouped country dataset](https://huggingface.co/datasets/stochastic/random_streetview_images_grouped_v1), while [torch_trainer_reg.py](torch_trainer_reg.py) loads the [panorama dataset](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2).
+
+**Dataset credit:** [stochastic](https://huggingface.co/stochastic) (Winson Truong).
 
 ## Installation
 ### Requirements
-**OS**: Windows >= 10, OSX >= 12 (Monterey), Linux.
+- **Python 3.12** or newer.
+- **Node.js** and **npm** for the Electron desktop app.
+- A **CUDA**-compatible **NVIDIA** GPU is recommended for faster inference and training; CPU inference is *also supported*.
 
-**Software**: Node.JS, Electron (for GUI), Python >= 3.12.
-
-**Hardware**: CUDA-compatible NVIDIA GPU is highly recommended.
-
-### Dependencies
-**Kopernik** mostly requires a set of machine learning and image processing libraries (+ few more additional for GUI and UX).
+### Python dependencies
+Install PyTorch using the command recommended by the [official PyTorch installer](https://pytorch.org/get-started/locally/) for your OS and CUDA setup, then install the remaining packages:
 ```
-pip install torch torchvision scikit-learn datasets numpy opencv-python pillow tqdm pathlib dotenv streamlit
+python -m pip install scikit-learn datasets numpy opencv-python pillow tqdm python-dotenv streamlit
 ```
-### Setup
-In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)
 
-Otherwise, to train Kopernik with your own configuration, look into [torch_trainer.py](torch_trainer.py) for country model and [torch_trainer_reg.py](torch_trainer_reg.py) for regional model respectfully.
-
-Before start, make sure to confugire the paths to your models and the sample image in [.env](.env) file.
+### Model and input setup
+1. Download the fine-tuned checkpoint file(s) you want to use from the [Kopernik Hugging Face model repository](https://huggingface.co/flmxn/resnet50-streetview).
+2. Copy [.env.example](.env.example) to `.env` and set the paths to your checkpoint(s) and input image:
 ```
-CKPT = "E://resnet50_streetview_imagenet1k.pth" // country model
-CKPT_REG = "E://resnet50_streetview_imagenet1k_regional.pth" // regional model
-INPUT_IMG = "pics/us1.png"
+CKPT=path/to/country_checkpoint.pth
+CKPT_REG=path/to/regional_checkpoint.pth
+INPUT_IMG=pics/us1.png
+PRETTY=1
 ```
->.env
 
-## Understanding predictions and labels
+`CKPT` and `CKPT_REG` can point to the country and regional checkpoints respectively. The CLI can run either model independently; set `INPUT_IMG` to an image file for CLI inference. `PRETTY=1` enables the summarized output. Use `PRETTY=0` for diagnostic output. The `.env.example` file also lists `COUNTRY_IMG` and `REGION_IMG`, which are updated when visualizations are generated.
+
+To train models instead, edit the settings in [torch_trainer.py](torch_trainer.py) (country) or [torch_trainer_reg.py](torch_trainer_reg.py) (regional) and run the corresponding script. Training downloads its dataset from Hugging Face and requires the training dependencies above, including PyTorch and torchvision.
+
+## Understanding predictions
+
 > [!NOTE]
-> This section is constantly improving and getting new updates, based on tests and feedback.
+> This section summarizes observed behavior of the current developer checkpoints. Predictions and label tendencies may change with different models or training data.
 
 > [!IMPORTANT]
-> When working with a mathematical model, it is a common mistake to take it's predictions as-is. It is crucial to understand the meaning behind each label in a particular model architecture. [Developer models](#model-setup) is far from flawless, just as any other mathematical predictor of such nature.
+> It`s a common mistake to take prediction as-is, when working with a mathematical model (such as that). Interpret labels in the context of the model and its training data; the model may respond to visual similarities rather than country-specific features.
 
-To fairly estimate and interpret predictions of [this particular](#model-setup) model, let's categorize labels inside it's computing space.
-+ <ins>**Null point attractors:**</ins> **New Zealand** (NZ), **Bhutan** (BT), **Eswatini** (SZ), **Cambodia** (KH) and **Argentina** (AR). These labels usually represent particular ambiguity of image features, such as excessive visual noise or, on the other hand, lack of telling details. Results, containing these labels as *top_k* are <ins>*unreliable*</ins> and serve no straightforward meaning due to lack of images' informative features.
+Predictions are estimates from the model, not verified locations. Scores depend on the checkpoint and training data; treat them as relative model outputs, not calibrated measures of geographic certainty. The country model's pretty output groups Argentina, Bhutan, Cambodia, Eswatini, and New Zealand under `UNDEFINED`.
 
 > [!TIP]
-> If you want to group <ins>**null point attractors**</ins> as **UNDEFINED** when listing predictions, check out [this](#startup)
-  
-+ <ins>**Common attractors:**</ins>
-  - **Taiwan** (TW) and **South Korea** (KR) labels represent features of developed mostly Asian countries, although certain European or American landscapes can fit into this space as well. More often than not represents large urban centres of China, India, Japan, Australia, USA and Russia.
-  - **Czech Republic** (CZ) label represents features of mostly post-soviet countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents rural or small urban centres of Russia, Ukraine, Belarus, Poland, Estonia, Latvia and Lithuania.
-  - **Greece** (GR) label represents features of mostly Balkan countries, although certain Eastern European landscapes can fit into this space as well. More often than not represents small urban centres of Russia, Ukraine, Belarus, Serbia, Hungary and Bulgaria.
-  - **Finland** (FI) label represents features of mostly northern countries, although certain European landscapes can fit into this space as well. More often than not represents northern medium urban centres of Norway, Sweden, Finland, Denmark, Iceland and Russia. In particular cases, may represent features of large urban centres of East Asia. 
-  - **Spain** (ES) label represents features of mostly European countries, although certain American landscapes can fit into this space as well. More often than not represents urban centres of France, Spain, Portugal and Italy.
+> In pretty output, the **5** null point attractor labels are grouped under **UNDEFINED**.
 
-+ <ins>**Particular attractors:**</ins>
-  - **Romania** (RO), **Mexico** (MX) and **Ukraine** (UA) labels may represent features of wide areas with no particular subject (ex. highways) all over the world.
-  - **Japan** (JP) label may represent features of lush green flora all over the world. 
-  - **Botswana** (BW) label may represent features of any kind of landscapes in Japan.
-  - **Canada** (CA) label may represent features of neighbourhoods in USA.
-  - **Sweden** (SE) label may represent features of townhouse settlements in North America or Oceania.
-  - **Andorra** (AD) label may represent features of noisy or bloated landscapes in Latin American countries.
-  - **Poland** (PL) label may represent features of southern recreational or resort locations.
+The labels can also act as visual "attractors": a prediction may reflect shared image features rather than the actual country. Based on observed model behavior:
+
+- **Null point attractors:** **New Zealand (NZ)**, **Bhutan (BT)**, **Eswatini (SZ)**, **Cambodia (KH)**, and **Argentina (AR)** often appear for ambiguous images, such as scenes with visual noise or few distinctive details. Treat these predictions as especially unreliable.
+- **Common attractors:**
+  - **Taiwan (TW)** and **South Korea (KR)** can represent developed, often Asian-looking landscapes, but may also appear for scenes from China, India, Japan, Australia, the USA, Russia, Europe, or the Americas.
+  - **Czech Republic (CZ)** can appear for post-Soviet and other Eastern European landscapes, including rural or small urban scenes.
+  - **Greece (GR)** can appear for Balkan and Eastern European landscapes, including small urban scenes.
+  - **Finland (FI)** can appear for northern European landscapes and, in some cases, large urban scenes in East Asia.
+  - **Spain (ES)** can appear for European urban landscapes, including scenes from France, Portugal, and Italy, as well as some American landscapes.
+- **Particular attractors:**
+  - **Romania (RO)**, **Mexico (MX)**, and **Ukraine (UA)** can appear for broad, nonspecific scenes such as highways.
+  - **Japan (JP)** can appear for lush green vegetation.
+  - **Botswana (BW)** can appear for landscapes in Japan.
+  - **Canada (CA)** can appear for neighborhoods in the USA.
+  - **Sweden (SE)** can appear for townhouse settlements in North America or Oceania.
+  - **Andorra (AD)** can appear for visually noisy or dense landscapes in Latin America.
+  - **Poland (PL)** can appear for southern recreational or resort locations.
+
+Grad-CAM highlights image areas associated with a prediction; it is a qualitative visualization, not proof of the model's reasoning.
 
 ## Inference
 ### CLI
-If you completed [model setup](#model-setup) properly, inference requires no any additional preparations.
+With `.env` configured and at least one checkpoint available, run inference from the repository root:
 ```
 python torch_main.py
 ```
+
+The script reads `INPUT_IMG`, writes available visualizations to `output/`, and prints predictions. To enable diagnostic output for a single run, pass `verbose`:
 > [!TIP]
-> Default output mode is pretty. In order to show debug logs and display more development information, set **IS_PRETTY** in the inference config to <ins>*False*</ins> or pass an additional argument when starting the inference from shell:
-> ```
-> python torch_main.py verbose
-> ``` 
+> Run `python torch_main.py verbose` to enable diagnostic output for a current inference run.
 
 ### GUI
-If CLI works, Streamlit GUI could be a great user experience for occasional use. To start Electron app, use
+To start the Streamlit interface in your browser:
 ```
+streamlit run gui.py
+```
+
+To run it in the Electron desktop window, install the **npm** dependencies and configure a project-root `venv` with the Python dependencies installed in it. The Electron launcher uses that environment directly:
+```
+python -m venv venv
+npm install
 npm run dev:streamlit
 ```
-and enjoy!
 
 ### Pretty output digest
-> [!TIP]
-> Make sure to read [this](#understanding-predictions-and-labels) before getting into predictions provided below.
+The images and predictions below are an example for the checked-in sample image; results can vary with the checkpoint.
 
 ![Utah, USA](pics/us1.png)
 > 1260 East 50 North, Springville, UT 84663, USA
@@ -118,4 +152,7 @@ Regional predictions:
     Latin America and South Asia: 0.00
 ```
 ![Regional model output](output/region_us1.png)
-Regional model is confident and determined enough to assume **Anglosphere** as a top prediction. Visualization implies a definite significance of <ins>**houses** in the left of the image</ins>, a <ins>**house** in the right of the image</ins> and a <ins>**hill valley** in the top of the image</ins>.
+Regional model is confident and determined enough to assume **Anglosphere and Central Europe** as a top prediction. Visualization implies a definite significance of <ins>**houses** in the left of the image</ins>, a <ins>**house** in the right of the image</ins> and a <ins>**hill valley** in the top of the image</ins>.
+
+### License
+MIT, see LICENSE
