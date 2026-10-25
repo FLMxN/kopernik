@@ -17,6 +17,7 @@ Open-source deep learning research tool for inspecting geographic data based on 
 
 ## Table of contents
 - [Architecture](#architecture)
+- [Project layout](#project-layout)
 - [Installation](#installation)
   - [Requirements](#requirements)
   - [Python dependencies](#python-dependencies)
@@ -34,9 +35,17 @@ Kopernik uses two **ResNet-50** classifiers initialized with **ImageNet-1K** wei
 - The country classifier predicts **56** country labels.
 - The regional classifier predicts one of **7** project-defined regions.
 
-The training scripts use different datasets: [torch_trainer.py](torch_trainer.py) loads the [grouped country dataset](https://huggingface.co/datasets/stochastic/random_streetview_images_grouped_v1), while [torch_trainer_reg.py](torch_trainer_reg.py) loads the [panorama dataset](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2).
+The training scripts use different datasets: [torch_trainer.py](backend/torch_trainer.py) loads the [grouped country dataset](https://huggingface.co/datasets/stochastic/random_streetview_images_grouped_v1), while [torch_trainer_reg.py](backend/torch_trainer_reg.py) loads the [panorama dataset](https://huggingface.co/datasets/stochastic/random_streetview_images_pano_v0.0.2).
 
 **Dataset credit:** [stochastic](https://huggingface.co/stochastic) (Winson Truong).
+
+## Project layout
+- [backend/](backend): Python inference, training, API, and Streamlit application.
+- [desktop/](desktop): Electron launchers for the React and Streamlit apps.
+- [src/](src): React/Vite frontend and its assets.
+- [pics/](pics): sample and uploaded input images.
+- [output/](output): generated Grad-CAM images and checked-in examples.
+- Root-level `package.json`, `vite.config.js`, and `index.html`: npm and Vite configuration.
 
 ## Installation
 ### Requirements
@@ -62,7 +71,12 @@ PRETTY=1
 
 `CKPT` and `CKPT_REG` can point to the country and regional checkpoints respectively. The CLI can run either model independently; set `INPUT_IMG` to an image file for CLI inference. `PRETTY=1` enables the summarized output. Use `PRETTY=0` for diagnostic output. The `.env.example` file also lists `COUNTRY_IMG` and `REGION_IMG`, which are updated when visualizations are generated.
 
-To train models instead, edit the settings in [torch_trainer.py](torch_trainer.py) (country) or [torch_trainer_reg.py](torch_trainer_reg.py) (regional) and run the corresponding script. Training downloads its dataset from Hugging Face and requires the training dependencies above, including PyTorch and torchvision.
+To train models instead, edit the settings in [torch_trainer.py](backend/torch_trainer.py) (country) or [torch_trainer_reg.py](backend/torch_trainer_reg.py) (regional) and run the corresponding script as a module from the repository root:
+```
+python -m backend.torch_trainer
+python -m backend.torch_trainer_reg
+```
+Training downloads its dataset from Hugging Face and requires the training dependencies above, including PyTorch and torchvision.
 
 ## Understanding predictions
 
@@ -101,22 +115,27 @@ Grad-CAM highlights image areas associated with a prediction; it is a qualitativ
 ### CLI
 With `.env` configured and at least one checkpoint available, run inference from the repository root:
 ```
-python torch_main.py
+python -m backend.torch_main
 ```
 
 The script reads `INPUT_IMG`, writes available visualizations to `output/`, and prints predictions. To enable diagnostic output for a single run, pass `verbose`:
 > [!TIP]
-> Run `python torch_main.py verbose` to enable diagnostic output for a current inference run.
+> Run `python -m backend.torch_main verbose` to enable diagnostic output for a current inference run.
 
 ### GUI
 To start the Streamlit interface in your browser:
 ```
-streamlit run gui.py
+python -m streamlit run backend/gui.py
 ```
 
-To run it in the Electron desktop window, install the **npm** dependencies and configure a project-root `venv` with the Python dependencies installed in it. The Electron launcher uses that environment directly:
+To run it in the Electron desktop window, create a project-root `venv`, activate it, and install the Python dependencies from the section above into that environment. Then install the **npm** dependencies; the Electron launcher uses the project `venv` directly:
 ```
 python -m venv venv
+# Windows:
+venv\Scripts\activate
+# macOS/Linux:
+source venv/bin/activate
+# Install Python packages as described above, then:
 npm install
 npm run dev:streamlit
 ```

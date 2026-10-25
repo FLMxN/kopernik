@@ -33,6 +33,8 @@ stochastic/random_streetview_images_grouped_v1/train/state.json
 stochastic/random_streetview_images_grouped_v1/train/data-00004-of-00006.arrow
 *.arrow
 *.json
+!package.json
+!package-lock.json
 __pycache__/
 *.pyc
 
