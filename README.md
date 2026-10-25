@@ -23,7 +23,7 @@ Dataset itself and additional information can be found on [Hugging Face](https:/
 ### Dependencies
 **Kopernik** mostly requires a set of machine learning and image processing libraries (+ few more additional for GUI and UX).
 ```
-pip install torch torchvision scikit-learn datasets numpy cv2 pillow tqdm pathlib dotenv streamlit
+pip install torch torchvision scikit-learn datasets numpy opencv-python pillow tqdm pathlib dotenv streamlit
 ```
 ### Setup
 In order to use pretrained fine-tuned models of the latest <ins>**developer version**</ins>, download it via [Hugging Face](https://huggingface.co/flmxn/resnet50-streetview)

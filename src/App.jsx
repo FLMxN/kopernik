@@ -11,7 +11,7 @@ import FileDropzone from './dropzone.jsx'
 
 let res;
 let image_name = "lol.png";
-const API_BASE = "https://151.241.234.225.sslip.io";
+const API_BASE_URL = process.env.API_BASE_URL || "http://localhost:5173";
 
 function App() {
   const [pretty, setPretty] = useState(1)
@@ -19,15 +19,17 @@ function App() {
   const [pic, setImage] = useState()
   const [origUrl, setOrigUrl] = useState()
   const [fullscreenImage, setFullscreenImage] = useState(null)
+  const [isLoading, setIsLoading] = useState(false)
 
   async function form(image, pretty) {
   try {
+    setIsLoading(true);
     const formData = new FormData();
     formData.append('image', image);
     formData.append('pretty', pretty % 2);
     formData.append('act', 'run');
 
-    const response = await fetch(`${API_BASE}/api/inference`, {
+    const response = await fetch(`${API_BASE_URL}/api/inference`, {
       method: "POST",
       body: formData,
     });
@@ -41,6 +43,8 @@ function App() {
     setOutput(data)
   } catch (err) {
     console.error("fetch error:", err);
+  } finally {
+    setIsLoading(false);
   }
 }
 
@@ -79,10 +83,10 @@ function App() {
             {output.country_predictions?.gradcam && (
               <div className="output-panel">
                 <img
-                  src={`${API_BASE}${output.country_predictions.gradcam}`}
+                  src={`${API_BASE_URL}${output.country_predictions.gradcam}`}
                   alt="country gradcam"
                   className="output-image output-image-clickable"
-                  onClick={() => setFullscreenImage(`${API_BASE}${output.country_predictions.gradcam}`)}
+                  onClick={() => setFullscreenImage(`${API_BASE_URL}${output.country_predictions.gradcam}`)}
                 />
                 {output.country_predictions?.predictions && (
                   <div className="output-table-card">
@@ -104,10 +108,10 @@ function App() {
             {output.region_predictions?.gradcam && (
               <div className="output-panel">
                 <img
-                  src={`${API_BASE}${output.region_predictions.gradcam}`}
+                  src={`${API_BASE_URL}${output.region_predictions.gradcam}`}
                   alt="region gradcam"
                   className="output-image output-image-clickable"
-                  onClick={() => setFullscreenImage(`${API_BASE}${output.region_predictions.gradcam}`)}
+                  onClick={() => setFullscreenImage(`${API_BASE_URL}${output.region_predictions.gradcam}`)}
                 />
                 {output.region_predictions?.predictions && (
                   <div className="output-table-card">
@@ -142,8 +146,11 @@ function App() {
             onClick={() => setPretty(prev => 1 - prev)}>
           </md-switch>
         </label>
-  <md-elevated-button onClick={() => form(pic, pretty)} disabled={!pic}>
-        run
+      {isLoading && (
+        <progress className="inference-progress" max="100" value={undefined}></progress>
+      )}
+  <md-elevated-button onClick={() => form(pic, pretty)} disabled={!pic || isLoading}>
+        {isLoading ? 'Running...' : 'run'}
         <svg slot="icon" viewBox="0 0 48 48"><path d="M6 40V8l38 16Zm3-4.65L36.2 24 9 12.5v8.4L21.1 24 9 27Zm0 0V12.5 27Z"/></svg>
         </md-elevated-button>
     </div>

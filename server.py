@@ -84,7 +84,7 @@ app.mount("/output", StaticFiles(directory="output"), name="output")
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # or "*"
+    allow_origins=["*"],
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -108,7 +108,6 @@ async def inference(
     contents = await image.read()
     img = Image.open(io.BytesIO(contents)).convert("RGB")
 
-    # Save to temp file for gradcam
     with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
         img.save(tmp.name)
         temp_path = tmp.name
@@ -122,4 +121,3 @@ async def inference(
         return JSONResponse(content=result)
     finally:
         os.unlink(temp_path)
-

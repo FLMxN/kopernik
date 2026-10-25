@@ -2,6 +2,7 @@ const { app, BrowserWindow } = require("electron");
 const net = require("net");
 const http = require("http");
 const { exec } = require("child_process");
+require('dotenv').config();
 
 function waitForPort(
   port,
