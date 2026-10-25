@@ -1,0 +1,40 @@
+{
+  "name": "geoml",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "main": "desktop/react_main.cjs",
+  "scripts": {
+    "build": "vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "dev": "concurrently \"npm run dev:vite\" \"npm run dev:react\"",
+    "dev:vite": "vite",
+    "dev:react": "electron desktop/react_main.cjs",
+    "dev:streamlit": "electron desktop/streamlit_main.cjs",
+    "deploy": "gh-pages -d dist"
+  },
+  "dependencies": {
+    "@material/web": "^2.4.1",
+    "dotenv": "^18.0.9",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.1",
+    "@types/react": "^19.2.5",
+    "@types/react-dom": "^19.2.3",
+    "@vitejs/plugin-react": "^5.1.1",
+    "concurrently": "^9.2.1",
+    "electron": "^40.1.0",
+    "eslint": "^9.39.1",
+    "eslint-plugin-react-hooks": "^7.0.1",
+    "eslint-plugin-react-refresh": "^0.4.24",
+    "gh-pages": "^6.3.0",
+    "globals": "^16.5.0",
+    "vite": "npm:rolldown-vite@7.2.5"
+  },
+  "overrides": {
+    "vite": "npm:rolldown-vite@7.2.5"
+  }
+}
