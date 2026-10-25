@@ -8,6 +8,7 @@
   <a href="https://github.com/FLMxN/kopernik/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-a6e3a1?style=for-the-badge&logo=opensourceinitiative&logoColor=cdd6f4&labelColor=181825" alt="License"></a>
   <img src="https://img.shields.io/badge/python-3.12+-3776AB?style=for-the-badge&logo=python&logoColor=cdd6f4&labelColor=181825" alt="Python Version">
   <img src="https://img.shields.io/badge/torch-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=cdd6f4&labelColor=181825" alt="PyTorch">
+  <img src="https://img.shields.io/badge/status-stable-green?style=for-the-badge" alt="Stable">
   <a href="https://github.com/FLMxN/kopernik/stargazers"><img src="https://img.shields.io/github/stars/FLMxN/kopernik?style=for-the-badge&logo=github&logoColor=cdd6f4&label=stars&labelColor=181825&color=f9e2af" alt="GitHub Stars"></a>
 </p>
 
