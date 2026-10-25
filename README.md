@@ -49,9 +49,12 @@ The training scripts use different datasets: [torch_trainer.py](backend/torch_tr
 
 ## Installation
 ### Requirements
-- **Python 3.12** or newer.
-- **Node.js** and **npm** for the Electron desktop app.
-- A **CUDA**-compatible **NVIDIA** GPU is recommended for faster inference and training; CPU inference is *also supported*.
+| Requirement | Details |
+|---|---|
+| **Python** | **3.12** or newer |
+| **Dependencies** | see below |
+| **Node.js** and **npm** | for the Electron desktop app |
+| **CUDA**-compatible **NVIDIA** GPU | Recommended for faster inference and training; CPU inference is *also supported*. |
 
 ### Python dependencies
 Install PyTorch using the command recommended by the [official PyTorch installer](https://pytorch.org/get-started/locally/) for your OS and CUDA setup, then install the remaining packages:
