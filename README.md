@@ -96,11 +96,6 @@ Predictions are estimates from the model, not verified locations. Scores depend 
 
 The country model's 56 class indices follow the checkpoint's `label_mapping` (alphabetical ISO 3166-1 alpha-2 order: `AD, AE, AR, AU, ...`). The regional model stores its 7 labels the same way. The backend reads this mapping from the checkpoint at load time, so displayed names always match the trained class order.
 
-> [!NOTE]
-> An earlier revision of this document used a different, hard-coded label permutation. Only `HR` and `US` happened to coincide. The class indices and Grad-CAM heatmaps were computed for the correct classes; the displayed names were not. The country-specific observations below are a translation of that earlier list, not a fresh evaluation.
-
-The model is a scene classifier, not a geolocator. The `UNDEFINED` group contains `MY, SI, CH, CA, DE` (Malaysia, Slovenia, Switzerland, Canada, Germany). These are the corrected classes behind the old "null point" labels `NZ, BT, SZ, KH, AR`; the grouping now uses the actual class codes.
-
 The labels can also act as visual "attractors": a prediction may reflect shared image features rather than the actual country. With the corrected label order, the previous observations translate to:
 
 - **Null point attractors:** **Malaysia (MY)**, **Slovenia (SI)**, **Switzerland (CH)**, **Canada (CA)**, and **Germany (DE)** often appear for ambiguous images, such as scenes with visual noise or few distinctive details. Treat these predictions as especially unreliable.
