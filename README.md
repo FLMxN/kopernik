@@ -14,6 +14,8 @@
 
 Open-source deep learning research tool for inspecting geographic data based on landscape pictures inside or outside of urbanity via neural networks.
 
+**Live demo:** [flmxn.github.io/kopernik](https://flmxn.github.io/kopernik/)
+
 </div>
 
 ## Table of contents
@@ -90,28 +92,34 @@ Training downloads its dataset from Hugging Face and requires the training depen
 > [!IMPORTANT]
 > It`s a common mistake to take prediction as-is, when working with a mathematical model (such as this one). Interpret labels in the context of the model and its training data; the model may respond to visual similarities rather than country-specific features.
 
-Predictions are estimates from the model, not verified locations. Scores depend on the checkpoint and training data; treat them as relative model outputs, not calibrated measures of geographic certainty. The country model's pretty output groups Argentina, Bhutan, Cambodia, Eswatini, and New Zealand under `UNDEFINED`.
+Predictions are estimates from the model, not verified locations. Scores depend on the checkpoint and training data; treat them as relative model outputs, not calibrated measures of geographic certainty.
 
-> [!TIP]
-> In pretty output, the **5** null point attractor labels are grouped under **UNDEFINED**.
+The country model's 56 class indices follow the checkpoint's `label_mapping` (alphabetical ISO 3166-1 alpha-2 order: `AD, AE, AR, AU, ...`). The regional model stores its 7 labels the same way. The backend reads this mapping from the checkpoint at load time, so displayed names always match the trained class order.
 
-The labels can also act as visual "attractors": a prediction may reflect shared image features rather than the actual country. Based on observed model behavior:
+> [!NOTE]
+> An earlier revision of this document used a different, hard-coded label permutation. Only `HR` and `US` happened to coincide. The class indices and Grad-CAM heatmaps were computed for the correct classes; the displayed names were not. The country-specific observations below are a translation of that earlier list, not a fresh evaluation.
 
-- **Null point attractors:** **New Zealand (NZ)**, **Bhutan (BT)**, **Eswatini (SZ)**, **Cambodia (KH)**, and **Argentina (AR)** often appear for ambiguous images, such as scenes with visual noise or few distinctive details. Treat these predictions as especially unreliable.
+The model is a scene classifier, not a geolocator. The `UNDEFINED` group contains `MY, SI, CH, CA, DE` (Malaysia, Slovenia, Switzerland, Canada, Germany). These are the corrected classes behind the old "null point" labels `NZ, BT, SZ, KH, AR`; the grouping now uses the actual class codes.
+
+The labels can also act as visual "attractors": a prediction may reflect shared image features rather than the actual country. With the corrected label order, the previous observations translate to:
+
+- **Null point attractors:** **Malaysia (MY)**, **Slovenia (SI)**, **Switzerland (CH)**, **Canada (CA)**, and **Germany (DE)** often appear for ambiguous images, such as scenes with visual noise or few distinctive details. Treat these predictions as especially unreliable.
 - **Common attractors:**
-  - **Taiwan (TW)** and **South Korea (KR)** can represent developed, often Asian-looking landscapes, but may also appear for scenes from China, India, Japan, Australia, the USA, Russia, Europe, or the Americas.
-  - **Czech Republic (CZ)** can appear for post-Soviet and other Eastern European landscapes, including rural or small urban scenes.
-  - **Greece (GR)** can appear for Balkan and Eastern European landscapes, including small urban scenes.
-  - **Finland (FI)** can appear for northern European landscapes and, in some cases, large urban scenes in East Asia.
-  - **Spain (ES)** can appear for European urban landscapes, including scenes from France, Portugal, and Italy, as well as some American landscapes.
+  - **South Korea (KR)** and **United Arab Emirates (AE)** can represent developed, often Asian-looking landscapes, but may also appear for scenes from China, India, Japan, Australia, the USA, Russia, Europe, or the Americas.
+  - **Russia (RU)** can appear for post-Soviet and other Eastern European landscapes, including rural or small urban scenes.
+  - **Ukraine (UA)** can appear for Balkan and Eastern European landscapes, including small urban scenes.
+  - **Hong Kong (HK)** can appear for northern European landscapes and, in some cases, large urban scenes in East Asia.
+  - **Peru (PE)** can appear for European urban landscapes, including scenes from France, Portugal, and Italy, as well as some American landscapes.
 - **Particular attractors:**
-  - **Romania (RO)**, **Mexico (MX)**, and **Ukraine (UA)** can appear for broad, nonspecific scenes such as highways.
-  - **Japan (JP)** can appear for lush green vegetation.
-  - **Botswana (BW)** can appear for landscapes in Japan.
-  - **Canada (CA)** can appear for neighborhoods in the USA.
-  - **Sweden (SE)** can appear for townhouse settlements in North America or Oceania.
-  - **Andorra (AD)** can appear for visually noisy or dense landscapes in Latin America.
-  - **Poland (PL)** can appear for southern recreational or resort locations.
+  - **Netherlands (NL)**, **Iceland (IS)**, and **Norway (NO)** can appear for broad, nonspecific scenes such as highways.
+  - **Latvia (LV)** can appear for lush green vegetation.
+  - **Japan (JP)** is recognized reliably on Japanese landscapes; the previous "Botswana" observation was a label-order artifact.
+  - **Australia (AU)** can appear for neighborhoods in the USA.
+  - **New Zealand (NZ)** can appear for townhouse settlements in North America or Oceania.
+  - **Brazil (BR)** can appear for visually noisy or dense landscapes in Latin America.
+  - **Singapore (SG)** can appear for southern recreational or resort locations.
+
+A proper class-bias/attractor analysis still requires a labeled validation set; these observations are qualitative.
 
 Grad-CAM highlights image areas associated with a prediction; it is a qualitative visualization, not proof of the model's reasoning.
 
@@ -125,6 +133,25 @@ python -m backend.torch_main
 The script reads `INPUT_IMG`, writes available visualizations to `output/`, and prints predictions. To enable diagnostic output for a single run, pass `verbose`:
 > [!TIP]
 > Run `python -m backend.torch_main verbose` to enable diagnostic output for a current inference run.
+
+### Static browser mode
+
+The `public/models/` directory contains FP16 ONNX exports of both classifiers.
+The frontend can run them locally with ONNX Runtime Web, without a backend:
+
+```powershell
+$env:VITE_INFERENCE_MODE = "onnx"
+$env:VITE_ONNX_PRECISION = "fp16"
+$env:VITE_BASE = "/kopernik/"
+npm run build
+```
+
+In this mode the browser uses **WebGPU** when available and falls back to
+single-threaded **WASM**. The first load downloads about 90 MB of models;
+dynamic Grad-CAM is not available in the static build, so only the country
+and region predictions are shown. Browser-side resampling and FP16 inference
+can shift probabilities slightly compared with the PyTorch backend; treat the
+static demo as a fast browser preview, not a bit-for-bit replacement.
 
 ### GUI
 To start the Streamlit interface in your browser:
@@ -152,27 +179,29 @@ The images and predictions below are an example for the checked-in sample image;
 ```
 ✅ Extracted model_state_dict from checkpoint
 ✅ Checkpoint loaded successfully (country)
+✅ Labels loaded from checkpoint: 56 classes
 ✅ Extracted model_state_dict from checkpoint
 ✅ Checkpoint loaded successfully (regional)
+✅ Labels loaded from checkpoint: 7 classes
 ```
 Inference script successfully loaded and initialized both models: country and regional.
 ```
 Particular predictions:
     United States (US): 99.41
-    Estonia (EE): 0.25
-    Slovenia (SI): 0.08
-    Germany (DE): 0.05
-    Chile (CL): 0.05
-    Spain (ES): 0.01
-    Romania (RO): 0.01
+    Chile (CL): 0.25
+    South Africa (ZA): 0.08
+    Hungary (HU): 0.05
+    Lithuania (LT): 0.05
+    Peru (PE): 0.01
+    Netherlands (NL): 0.01
 ```
 ![Country model output](output/country_us1.png)
 Country model is confident and determined enough to assume **United States of America** (US) as a top prediction. Visualization implies a definite significance of <ins>**houses** and **trees** in the left of the image</ins>.
 ```
 Regional predictions:
     Anglosphere and Central Europe: 93.21
-    Balkans and Eastern Europe: 6.79
-    Latin America and South Asia: 0.00
+    Scandinavia and Northern Europe: 6.79
+    Resorts and Undefined Nature: 0.00
 ```
 ![Regional model output](output/region_us1.png)
 Regional model is confident and determined enough to assume **Anglosphere and Central Europe** as a top prediction. Visualization implies a definite significance of <ins>**houses** in the left of the image</ins>, a <ins>**house** in the right of the image</ins> and a <ins>**hill valley** in the top of the image</ins>.

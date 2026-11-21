@@ -47,25 +47,6 @@ reg_to_name = {
     "arid_african": "Resorts and Undefined Nature"
 }
 
-id2label_map = {
-    7: "AD", 16: "AE", 15: "AR", 43: "AU", 30: "BD",
-    26: "BE", 4: "BG", 46: "BR", 48: "BT", 31: "BW",
-    3: "CA", 49: "CH", 34: "CL", 17: "CO", 45: "CZ",
-    25: "DE", 36: "DK", 12: "EE", 41: "ES", 23: "FI",
-    28: "FR", 0: "GB", 53: "GR", 22: "HK", 24: "HR",
-    14: "HU", 42: "ID", 13: "IE", 51: "IL", 6: "IS",
-    27: "IT", 35: "JP", 10: "KH", 1: "KR", 32: "LT",
-    50: "LV", 29: "MX", 9: "MY", 2: "NL", 5: "NO",
-    37: "NZ", 44: "PE", 47: "PL", 21: "PT", 38: "RO",
-    52: "RU", 40: "SE", 19: "SG", 55: "SI", 8: "SK",
-    11: "SZ", 18: "TH", 33: "TW", 39: "UA", 54: "US",
-    20: "ZA"
-}
-
-id2label_map_reg = {
-    0: "anglosphere", 1: "tropical", 2: "arid_african", 3: "mediterranean", 4: "post_socialist", 5: "nordic", 6: "east_asia"
-}
-
 def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is_region, alpha):
     class_idx = []
     label2id = {i: l for l, i in id_map.items()}
@@ -117,7 +98,7 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
         case "country":
             fill = (0, 255, 255)
 
-    for key, value in data_dict.items():
+    for key, value in sorted(data_dict.items(), key=lambda item: item[1], reverse=True):
         line = f"{key}: {value}"
         draw.text((x, y), line, fill=fill, font=font)       
         y += line_height
@@ -126,7 +107,10 @@ def draw(model, data_dict, image_path, task, show_pictures, colormap, id_map, is
     if show_pictures:
         OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
         img.save(OUTPUT_DIR / output_filename)
-        dotenv.set_key(dotenv_file, f"{task.upper()}_IMG", f"output/{output_filename}")
+        try:
+            dotenv.set_key(dotenv_file, f"{task.upper()}_IMG", f"output/{output_filename}")
+        except Exception:
+            pass
         return f'/output/{output_filename}'
 
     return None
@@ -163,7 +147,7 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
             "North America": ["CA", "MX", "US"],
             "South America": ["BR", "CL", "CO", "PE"],
             "Africa": ["BW", "ZA"],
-            "Undefined": ["SZ", "AR", "KH", "NZ", "BT"]
+            "Undefined": ["MY", "SI", "CH", "CA", "DE"]
         }
         unk_score = 0
     else:
@@ -248,16 +232,14 @@ def predict_country(model, samples, show_pictures, top_k=5, device=DEVICE, IS_PR
         for i, (prob, idx) in enumerate(zip(top_probs, top_indices)):
             label = model.id2label[idx]             
             state_score[label] = state_score[label] + prob*100/len(samples)
+            draw_key = f"{iso_alpha2_to_country[label]} ({label})"
             if x[0]%2 == 0 or x[0] == 0:
-                draw_buffer[f"{iso_alpha2_to_country[label]} ({label})"] = round(float(prob*100/2), ndigits=2)              
+                draw_buffer[draw_key] = round(float(prob*100/2), ndigits=2)
             else:
-                try:
-                    draw_buffer[f"{iso_alpha2_to_country[label]} ({label})"] = round(float(round(float(draw_buffer[f"{iso_alpha2_to_country[label]} ({label})"]), ndigits=2) + round(float(prob*100/2), ndigits=2)), ndigits=2)
-                except:
-                    pass
+                draw_buffer[draw_key] = round(float(draw_buffer.get(draw_key, 0.0) + prob*100/2), ndigits=2)
 
         if x[0]%2 != 0:
-            country_out = draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='turbo', id_map=id2label_map, is_region=False, alpha=0.5)
+            country_out = draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="country", show_pictures=show_pictures, colormap='turbo', id_map=model.id2label, is_region=False, alpha=0.5)
 
         if not IS_PRETTY:
             for i, (prob, idx) in enumerate(zip(reg_top_probs, reg_top_indices)):
@@ -346,15 +328,13 @@ def predict_region(model, samples, show_pictures, top_k=3, device=DEVICE, IS_PRE
             label = model.id2label[idx]
             regions[label] = regions[label] + prob*100/len(samples)
 
+            draw_key = reg_to_name[label]
             if x[0]%2 == 0 or x[0] == 0:
-                draw_buffer[reg_to_name[label]] = round(float(prob*100/2), ndigits=2)              
+                draw_buffer[draw_key] = round(float(prob*100/2), ndigits=2)
             else:
-                try:
-                    draw_buffer[reg_to_name[label]] = round(float(round(float(draw_buffer[reg_to_name[label]]), ndigits=2) + round(float(prob*100/2), ndigits=2)), ndigits=2)
-                except:
-                    pass
+                draw_buffer[draw_key] = round(float(draw_buffer.get(draw_key, 0.0) + prob*100/2), ndigits=2)
         if x[0]%2 != 0:
-            region_out = draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='plasma', id_map=id2label_map_reg, is_region=True, alpha=0.5)             
+            region_out = draw(model=model, data_dict=draw_buffer, image_path=samples[x[0]][1], task="region", show_pictures=show_pictures, colormap='plasma', id_map=model.id2label, is_region=True, alpha=0.5)             
 
         preds = dict(sorted(
     ((reg_to_name[k], float(v)) for k, v in regions.items() if v != 0),

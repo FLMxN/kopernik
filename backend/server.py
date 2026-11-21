@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Form, UploadFile, File
+from fastapi import FastAPI, Form, UploadFile, File, HTTPException
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 import asyncio
@@ -88,15 +88,31 @@ app = FastAPI(lifespan=lifespan)
 OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
 app.mount("/output", StaticFiles(directory=OUTPUT_DIR), name="output")
 
+allowed_origins = [
+    origin.strip()
+    for origin in os.getenv("ALLOWED_ORIGINS", "*").split(",")
+    if origin.strip()
+]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=allowed_origins,
     allow_credentials=False,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
+
+@app.get("/health")
+async def health():
+    return {
+        "status": "ok",
+        "country_model": model_country is not None,
+        "region_model": model_region is not None,
+    }
+
+
 @app.post("/inference")
+@app.post("/api/inference")
 async def inference(
     image: UploadFile = File(...),
     pretty: str = Form(...),
@@ -108,11 +124,19 @@ async def inference(
 
     pretty_bool = pretty.lower() in ("true", "1", "yes")
 
+    if job_queue.qsize() >= 8:
+        raise HTTPException(status_code=503, detail="Server is busy, try again shortly")
+
     loop = asyncio.get_running_loop()
     future = loop.create_future()
 
     contents = await image.read()
-    img = Image.open(io.BytesIO(contents)).convert("RGB")
+    if len(contents) > 15 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="Image is too large (max 15 MB)")
+    try:
+        img = Image.open(io.BytesIO(contents)).convert("RGB")
+    except Exception as exc:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail=f"Invalid image: {exc}") from exc
 
     with tempfile.NamedTemporaryFile(suffix='.jpg', delete=False) as tmp:
         img.save(tmp.name)

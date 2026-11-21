@@ -7,7 +7,6 @@ from torchvision import transforms, models
 from PIL import Image
 from .paths import ROOT_DIR, resolve_project_path
 from .predictor import predict_country, predict_region
-from datasets import load_dataset
 import sys
 import dotenv
 import os
@@ -70,6 +69,11 @@ id2label_map = {
 id2label_map_reg = {
     0: "anglosphere", 1: "tropical", 2: "arid_african", 3: "mediterranean", 4: "post_socialist", 5: "nordic", 6: "east_asia"
 }
+
+# Fallback only: the checkpoints store the authoritative label_mapping.
+# These sorted maps match the training-time alphabetical class order.
+id2label_map = {i: code for i, code in enumerate(sorted(id2label_map.values()))}
+id2label_map_reg = {i: region for i, region in enumerate(sorted(id2label_map_reg.values()))}
 
 def crop_resize(image: Image.Image, size = (HEIGHT, HEIGHT)) -> Image.Image:
     w, h = image.size
@@ -136,7 +140,7 @@ def load_model_checkpoint(is_reg, path: str, device: torch.device, num_classes=5
     if not Path(path).exists():
         raise FileNotFoundError(f"Checkpoint not found: {path}")
 
-    checkpoint = torch.load(path, map_location="cpu")
+    checkpoint = torch.load(path, map_location="cpu", weights_only=False)
     
     if not IS_PRETTY:
         print("Checkpoint structure:")
@@ -211,6 +215,18 @@ def load_model_checkpoint(is_reg, path: str, device: torch.device, num_classes=5
                 print(f"    - {u}")
             if len(unexpected) > 5:
                 print(f"    ... and {len(unexpected)-5} more")
+    
+    label_mapping = checkpoint.get("label_mapping") if isinstance(checkpoint, dict) else None
+    if label_mapping:
+        model.id2label = {int(k): v for k, v in label_mapping.items()}
+        print(f"✅ Labels loaded from checkpoint: {len(model.id2label)} classes")
+        if len(model.id2label) != num_classes:
+            print(
+                f"⚠️ label_mapping has {len(model.id2label)} classes, "
+                f"expected {num_classes}"
+            )
+    else:
+        print("⚠️ No label_mapping in checkpoint; using fallback labels")
     
     model.to(device)
     model.eval()
